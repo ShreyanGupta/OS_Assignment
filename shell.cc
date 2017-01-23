@@ -5,12 +5,19 @@
 typedef long long ll;
 #include <string.h>
 #include <stdlib.h>
+
+#define SIZE 25
+
 //
 // initialize shellstate
 //
 void shell_init(shellstate_t& state){
+	char *temp = "";
+	state.line.push(temp);
+    state.curr_cmd = state.line.get_i(0);
     state.curr_pos = 0;
     state.end_pos = 0;
+    state.line_pos = 0;
     state.execute = false;
     state.num_key = 0;
 }
@@ -64,15 +71,33 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x0f : // tab
             break;
         case 0x1c : // enter
+        	char *temp = s.line.get_i(0);
+        	int i=0;
+        	while(*(curr_cmd+i) != '\0'){
+        		temp[i] = curr_cmd[i];
+        	}
+        	
             s.execute = true;
             break;
         case 0x1d : // ctrl
             break;
         case 0x2a : // shift
             break;
-        case 0x48 :	// up 	 
+        case 0x48 :	// up
+        	if(s.line_pos == line.size()) break;
+        	curr_cmd = line.get_i(++s.line_pos);
+        	while(*(s.curr_cmd + s.end_pos) != '\0'){
+        		++s.end_pos;
+        		++s.curr_pos;
+        	}
         	break;
-        case 0x50 : // down	 
+        case 0x50 : // down
+        	if(s.line_pos == 0) break;
+        	curr_cmd = line.get_i(--s.line_pos);
+        	while(*(s.curr_cmd + s.end_pos) != '\0'){
+        		++s.end_pos;
+        		++s.curr_pos;
+        	}
         	break;
         case 0x4b : // left	 
         	--s.curr_pos;
@@ -140,7 +165,9 @@ void shell_update(uint8_t scankey, shellstate_t& s){
     }
     s.curr_cmd[s.end_pos] = '\0';
     hoh_debug("Current pos: " << s.curr_pos << " end pos " << s.end_pos << " line " << s.curr_cmd);
-    // for(int i=0; i<s.end_pos; ++i) hoh_debug(s.curr_cmd[i]);
+    for(int i=0; i<s.line.size(); ++i){
+    	hoh_debug("line " << i << " : " << s.line.get_i(i));
+    }
 }
 
 

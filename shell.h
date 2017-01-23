@@ -6,10 +6,11 @@
 #include "labs/deque.h"
 
 struct shellstate_t{
-    Deque Lines;
-    char curr_cmd[1<<9];
+    Deque line;
+    char *curr_cmd;
     int curr_pos;
     int end_pos;
+    int line_pos;
     bool execute;
     int num_key;
     char output[1<<9];
