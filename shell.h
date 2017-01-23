@@ -1,7 +1,9 @@
 #pragma once
 #include "util/config.h"
 #include "util/debug.h"
-#include <cstdlib>
+#include <stdlib.h>
+
+#include "labs/deque.h"
 
 struct shellstate_t{
     Deque Lines;
