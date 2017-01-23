@@ -1,6 +1,5 @@
 #include "labs/shell.h"
 #include "labs/vgatext.h"
-#include "labs/deque.h"
 
 typedef long long ll;
 #include <string.h>
@@ -13,6 +12,15 @@ void shell_init(shellstate_t& state){
     state.end_pos = 0;
     state.execute = false;
     state.num_key = 0;
+}
+
+char memcmp(char* s1, char*s2)
+{
+	int x1 = 0;
+	int x2 = 0;
+	while (s1[x1] != '\0' && s2[x2] != '\0')
+		if (s1[x1] != s2[x2]) return 0;
+	return (s1[x1] == s2[x2]);
 }
 
 //
@@ -156,11 +164,11 @@ void shell_step(shellstate_t& s){
     for (int i = 0; i < x; i++)
 	blah[i] = s.curr_cmd[i];
     blah[x] = '\0';
-    char echo[4] = "echo";
-    char fibbo[5] = "fibbo"
-    char facto[5] = "facto";
-    char clear[5] = "clear";
-    if (strcmp(blah,clear) == 0)
+    char echo[5] = "echo";
+    char fibbonacci[6] = "fibbo";
+    char factorial[6] = "facto";
+    char clear[6] = "clear";
+    if (memcmp(blah,clear,6) == 0)
     {
 	
     }
@@ -171,14 +179,15 @@ void shell_step(shellstate_t& s){
 	int y = x;
 	while (s.curr_cmd[x] != '\0')
 	    x++;
-	if (strcmp(blah,echo) == 0)
+	if (memcmp(blah,echo,5) == 0)
 	{
 	    for (int i = y; i <= x; i++)
-		s.output[i-y] = s.cur_cmd[i];
+		s.output[i-y] = s.curr_cmd[i];
 	}
 	else if (s.curr_cmd[x] == '-')
 	{
-	    s.output = "ERROR! Negative Input"
+	    char err[22] =  "ERROR! Negative Input";
+	    memcpy(s.output,err,22);
 	}
 	else
 	{
@@ -187,7 +196,7 @@ void shell_step(shellstate_t& s){
 	    for (int i = y; i < x; i++)
 		input = 10*input + s.curr_cmd[i];
 	    ll ans;
-	    if (strcmp(blah,fibbo) == 0)
+	    if (memcmp(blah,fibbonacci,6) == 0)
 		ans = fibbo(input);
 	    else
 		ans = facto(input);
@@ -248,19 +257,19 @@ void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
 	//const char *p = "What is your problem?";
 	// cursor had bg=7, fg=0
 	// all others have white fg, black bg.
-	for (int i = 0; i < 23; i++)
-		drawtext(0,i,state.Lines.get_i(i),w,0,7,vgatext_base);
+	//for (int i = 0; i < 23; i++)
+		//drawtext(0,i,state.line.get_i(i),w,0,7,vgatext_base);
 	//for(int loc=0;*p;loc++,p++){
 	//	writecharxy(loc, 1, *p, 7, 0, w, h, vgatext_base);
 	// MENU :
 	// STATUS BAR :
-	char *sbar = "Number of keys pressed = ";
-	strcat(sbar,itoa(state.num_key));
-	drawtext(0,24,sbar,w,0,7,vgatext_base);
+	char sbar[26] = "Number of keys pressed = ";
+	//strcat(sbar,itoa(state.num_key));
+	drawtext(0,24,sbar,w,0,7,w,h,vgatext_base);
 //	for (int ptr = 0; *sbar; ptr++,sbar++)
 //		writecharxy(ptr, 24, *sbar, 0, 7, w, h, vgatext_base);
     	// vgatext::writechar(loc,*p,0,7,vgatext_base);
-    }
+   // }
   // this is just an example:
   //
   // Please create your own user interface
@@ -296,7 +305,7 @@ ll fibbo(ll x)
 		ll c = b;
 		b += a;
 		a = c;
-		count++
+		count++;
 	}
 	return b;
 }
@@ -357,4 +366,5 @@ static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, 
 
   drawtext(x,y,a,maxw,bg,fg,w,h,vgatext_base);
 }
+
 
