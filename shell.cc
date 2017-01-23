@@ -1,6 +1,8 @@
 #include "labs/shell.h"
 #include "labs/vgatext.h"
 
+#include <string.h>
+#include <stdlib.h>
 //
 // initialize shellstate
 //
@@ -9,6 +11,51 @@ void shell_init(shellstate_t& state){
     state.end_pos = 0;
     state.execute = false;
     state.num_key = 0;
+}
+
+#define SIZE 25
+
+struct Deque{
+	int s;
+	char arr[SIZE][160];
+	int f;
+	int b;
+	Deque();
+	int size();
+	char *get_i(int);
+	void push(char *);
+};
+
+Deque::Deque(){
+	// for(int i=0; i<SIZE; ++i) arr[i] = NULL;
+	s = f = b = 0;
+}
+
+int Deque::size(){
+	// if(f == b) return 0;
+	// return (b-f+SIZE)%SIZE;
+	return s;
+}
+
+char *Deque::get_i(int i){
+	return arr[(f+i)%SIZE];
+}
+
+void Deque::push(char *c){
+	if(s == SIZE){
+		// free(arr[f]);
+		f = (f+1)%SIZE;
+	}
+	// arr[b] = (char *)malloc(strlen(c)+1);
+	int i=0;
+	while(*(c+i) != '\0'){
+		arr[b][i] = c[i];
+		++i;
+	}
+	arr[b][i] = '\0';
+	// for(int i=0; i<strlen(c); ++i) arr[b][i] = c[i];
+	// arr[b][strlen(c)+1] = '\0';
+	b = (b+1)%SIZE;
 }
 
 //
@@ -51,7 +98,9 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x01 : // esc
             break;
         case 0x0e : // backspace
-	        memcpy(s.curr_cmd+s.curr_pos-1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
+        	if(s.curr_pos == 0) break;
+        	for(int i=s.curr_pos-1; i < s.end_pos; ++i) s.curr_cmd[i] = s.curr_cmd[i+1];
+	        // memcpy(s.curr_cmd+s.curr_pos-1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
 	    	s.curr_pos--;
 	    	s.end_pos--;
             break;
@@ -69,10 +118,12 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x50 : // down	 
         	break;
         case 0x4b : // left	 
-        	s.curr_pos = std::max(0, --s.curr_pos);
+        	--s.curr_pos;
+        	if(s.curr_pos < 0) s.curr_pos = 0;
         	break;
         case 0x4d : // right
-        	s.curr_pos = std::min(s.end_pos, ++s.curr_pos); 
+        	++s.curr_pos;
+        	if(s.curr_pos > s.end_pos) s.curr_pos = s.end_pos;
         	break;
 
         case 0x02 : write_key_press=true; write_key = '1';	break;
@@ -121,16 +172,18 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x33 : write_key_press=true; write_key = ',';	break;
         case 0x34 : write_key_press=true; write_key = '.';	break;
         case 0x35 : write_key_press=true; write_key = '/';	break;
+        case 0x39 : write_key_press=true; write_key = ' ';	break;
     }
     if (write_key_press){
-    	memcpy(s.curr_cmd+s.curr_pos+1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
+    	for(int i=s.end_pos; i > s.curr_pos; --i) s.curr_cmd[i] = s.curr_cmd[i-1];
+    	// memcpy(s.curr_cmd+s.curr_pos+1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
     	s.curr_cmd[s.curr_pos] = write_key;
     	s.curr_pos++;
     	s.end_pos++;
     }
-    char 
-    hoh_debug("Current pos: " << curr_pos << " end pos " << end_pos);
-    for(int i=0; i<s.end_pos; ++i) hoh_debug(s.curr_cmd[i]);
+    s.curr_cmd[s.end_pos] = '\0';
+    hoh_debug("Current pos: " << s.curr_pos << " end pos " << s.end_pos << " line " << s.curr_cmd);
+    // for(int i=0; i<s.end_pos; ++i) hoh_debug(s.curr_cmd[i]);
 }
 
 
