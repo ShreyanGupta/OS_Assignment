@@ -6,6 +6,7 @@
 //
 void shell_init(shellstate_t& state){
     state.curr_pos = 0;
+    state.end_pos = 0;
     state.execute = false;
     state.num_key = 0;
 }
@@ -44,11 +45,15 @@ void shell_init(shellstate_t& state){
 void shell_update(uint8_t scankey, shellstate_t& s){
     hoh_debug("Got: "<<unsigned(scankey));
     ++s.num_key;
+    bool write_key_press = false;
+    char write_key;
     switch(scankey){
         case 0x01 : // esc
             break;
         case 0x0e : // backspace
-            --s.curr_pos;
+	        memcpy(s.curr_cmd+s.curr_pos-1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
+	    	s.curr_pos--;
+	    	s.end_pos--;
             break;
         case 0x0f : // tab
             break;
@@ -59,74 +64,73 @@ void shell_update(uint8_t scankey, shellstate_t& s){
             break;
         case 0x2a : // shift
             break;
+        case 0x48 :	// up 	 
+        	break;
+        case 0x50 : // down	 
+        	break;
+        case 0x4b : // left	 
+        	s.curr_pos = std::max(0, --s.curr_pos);
+        	break;
+        case 0x4d : // right
+        	s.curr_pos = std::min(s.end_pos, ++s.curr_pos); 
+        	break;
 
-        case 0x02 : s.curr_cmd[s.curr_pos++] = '1';	break;
-        case 0x03 : s.curr_cmd[s.curr_pos++] = '2';	break;
-        case 0x04 : s.curr_cmd[s.curr_pos++] = '3';	break;
-        case 0x05 : s.curr_cmd[s.curr_pos++] = '4';	break;
-        case 0x06 : s.curr_cmd[s.curr_pos++] = '5';	break;
-        case 0x07 : s.curr_cmd[s.curr_pos++] = '6';	break;
-        case 0x08 : s.curr_cmd[s.curr_pos++] = '7';	break;
-        case 0x09 : s.curr_cmd[s.curr_pos++] = '8';	break;
-        case 0x0a : s.curr_cmd[s.curr_pos++] = '9';	break;
-        case 0x0b : s.curr_cmd[s.curr_pos++] = '0';	break;
-        case 0x0c : s.curr_cmd[s.curr_pos++] = '-';	break;
-        case 0x0d : s.curr_cmd[s.curr_pos++] = '=';	break;
-        // case 0x0e : s.curr_cmd[s.curr_pos++] = '1';	break;
-        // case 0x0f : s.curr_cmd[s.curr_pos++] = '1';	break;
-        case 0x10 : s.curr_cmd[s.curr_pos++] = 'q';	break;
-        case 0x11 : s.curr_cmd[s.curr_pos++] = 'w';	break;
-        case 0x12 : s.curr_cmd[s.curr_pos++] = 'e';	break;
-        case 0x13 : s.curr_cmd[s.curr_pos++] = 'r';	break;
-        case 0x14 : s.curr_cmd[s.curr_pos++] = 't';	break;
-        case 0x15 : s.curr_cmd[s.curr_pos++] = 'y';	break;
-        case 0x16 : s.curr_cmd[s.curr_pos++] = 'u';	break;
-        case 0x17 : s.curr_cmd[s.curr_pos++] = 'i';	break;
-        case 0x18 : s.curr_cmd[s.curr_pos++] = 'o';	break;
-        case 0x19 : s.curr_cmd[s.curr_pos++] = 'p';	break;
-        case 0x1a : s.curr_cmd[s.curr_pos++] = '[';	break;
-        case 0x1b : s.curr_cmd[s.curr_pos++] = ']';	break;
-        // case 0x1c : s.curr_cmd[s.curr_pos++] = '1';	break;
-        // case 0x1d : s.curr_cmd[s.curr_pos++] = '1';	break;
-        case 0x1e : s.curr_cmd[s.curr_pos++] = 'a';	break;
-        case 0x1f : s.curr_cmd[s.curr_pos++] = 's';	break;
-        case 0x20 : s.curr_cmd[s.curr_pos++] = 'd';	break;
-        case 0x21 : s.curr_cmd[s.curr_pos++] = 'f';	break;
-        case 0x22 : s.curr_cmd[s.curr_pos++] = 'g';	break;
-        case 0x23 : s.curr_cmd[s.curr_pos++] = 'h';	break;
-        case 0x24 : s.curr_cmd[s.curr_pos++] = 'j';	break;
-        case 0x25 : s.curr_cmd[s.curr_pos++] = 'k';	break;
-        case 0x26 : s.curr_cmd[s.curr_pos++] = 'l';	break;
-        case 0x27 : s.curr_cmd[s.curr_pos++] = ';';	break;
-        case 0x28 : s.curr_cmd[s.curr_pos++] = '\'';	break;
-        case 0x29 : s.curr_cmd[s.curr_pos++] = ' ';	break;
-        // case 0x2a : s.curr_cmd[s.curr_pos++] = '[';	break;
-        // case 0x2b : s.curr_cmd[s.curr_pos++] = ']';	break;
-        case 0x2c : s.curr_cmd[s.curr_pos++] = 'z';	break;
-        case 0x2d : s.curr_cmd[s.curr_pos++] = 'x';	break;
-        case 0x2e : s.curr_cmd[s.curr_pos++] = 'c';	break;
-        case 0x2f : s.curr_cmd[s.curr_pos++] = 'v';	break;
-        case 0x30 : s.curr_cmd[s.curr_pos++] = 'b';	break;
-        case 0x31 : s.curr_cmd[s.curr_pos++] = 'n';	break;
-        case 0x32 : s.curr_cmd[s.curr_pos++] = 'm';	break;
-        case 0x33 : s.curr_cmd[s.curr_pos++] = ',';	break;
-        case 0x34 : s.curr_cmd[s.curr_pos++] = '.';	break;
-        case 0x35 : s.curr_cmd[s.curr_pos++] = '/';	break;
-        // case 0x36 : s.curr_cmd[s.curr_pos++] = 'l';	break;
-        // case 0x37 : s.curr_cmd[s.curr_pos++] = ';';	break;
-        // case 0x38 : s.curr_cmd[s.curr_pos++] = '\'';	break;
-        // case 0x39 : s.curr_cmd[s.curr_pos++] = ' ';	break;
-        // case 0x3a : s.curr_cmd[s.curr_pos++] = '[';	break;
-        // case 0x3b : s.curr_cmd[s.curr_pos++] = ']';	break;
-        // case 0x3c : s.curr_cmd[s.curr_pos++] = 'z';	break;
-        // case 0x3d : s.curr_cmd[s.curr_pos++] = 'x';	break;
-        // case 0x3e : s.curr_cmd[s.curr_pos++] = 'c';	break;
-        // case 0x3f : s.curr_cmd[s.curr_pos++] = 'v';	break;
-        
-        // default : // other keys
-        //     s.curr_cmd[s.curr_pos++] = scankey;
-        //     break;
+        case 0x02 : write_key_press=true; write_key = '1';	break;
+        case 0x03 : write_key_press=true; write_key = '2';	break;
+        case 0x04 : write_key_press=true; write_key = '3';	break;
+        case 0x05 : write_key_press=true; write_key = '4';	break;
+        case 0x06 : write_key_press=true; write_key = '5';	break;
+        case 0x07 : write_key_press=true; write_key = '6';	break;
+        case 0x08 : write_key_press=true; write_key = '7';	break;
+        case 0x09 : write_key_press=true; write_key = '8';	break;
+        case 0x0a : write_key_press=true; write_key = '9';	break;
+        case 0x0b : write_key_press=true; write_key = '0';	break;
+        case 0x0c : write_key_press=true; write_key = '-';	break;
+        case 0x0d : write_key_press=true; write_key = '=';	break;
+        case 0x10 : write_key_press=true; write_key = 'q';	break;
+        case 0x11 : write_key_press=true; write_key = 'w';	break;
+        case 0x12 : write_key_press=true; write_key = 'e';	break;
+        case 0x13 : write_key_press=true; write_key = 'r';	break;
+        case 0x14 : write_key_press=true; write_key = 't';	break;
+        case 0x15 : write_key_press=true; write_key = 'y';	break;
+        case 0x16 : write_key_press=true; write_key = 'u';	break;
+        case 0x17 : write_key_press=true; write_key = 'i';	break;
+        case 0x18 : write_key_press=true; write_key = 'o';	break;
+        case 0x19 : write_key_press=true; write_key = 'p';	break;
+        case 0x1a : write_key_press=true; write_key = '[';	break;
+        case 0x1b : write_key_press=true; write_key = ']';	break;
+        case 0x1e : write_key_press=true; write_key = 'a';	break;
+        case 0x1f : write_key_press=true; write_key = 's';	break;
+        case 0x20 : write_key_press=true; write_key = 'd';	break;
+        case 0x21 : write_key_press=true; write_key = 'f';	break;
+        case 0x22 : write_key_press=true; write_key = 'g';	break;
+        case 0x23 : write_key_press=true; write_key = 'h';	break;
+        case 0x24 : write_key_press=true; write_key = 'j';	break;
+        case 0x25 : write_key_press=true; write_key = 'k';	break;
+        case 0x26 : write_key_press=true; write_key = 'l';	break;
+        case 0x27 : write_key_press=true; write_key = ';';	break;
+        case 0x28 : write_key_press=true; write_key = '\'';break;
+        case 0x29 : write_key_press=true; write_key = ' ';	break;
+        case 0x2c : write_key_press=true; write_key = 'z';	break;
+        case 0x2d : write_key_press=true; write_key = 'x';	break;
+        case 0x2e : write_key_press=true; write_key = 'c';	break;
+        case 0x2f : write_key_press=true; write_key = 'v';	break;
+        case 0x30 : write_key_press=true; write_key = 'b';	break;
+        case 0x31 : write_key_press=true; write_key = 'n';	break;
+        case 0x32 : write_key_press=true; write_key = 'm';	break;
+        case 0x33 : write_key_press=true; write_key = ',';	break;
+        case 0x34 : write_key_press=true; write_key = '.';	break;
+        case 0x35 : write_key_press=true; write_key = '/';	break;
     }
+    if (write_key_press){
+    	memcpy(s.curr_cmd+s.curr_pos+1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
+    	s.curr_cmd[s.curr_pos] = write_key;
+    	s.curr_pos++;
+    	s.end_pos++;
+    }
+    char 
+    hoh_debug("Current pos: " << curr_pos << " end pos " << end_pos);
+    for(int i=0; i<s.end_pos; ++i) hoh_debug(s.curr_cmd[i]);
 }
 
 
@@ -168,7 +172,7 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
 }
 
-
+static void writecharxy(int x, int y, uint8_t c, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void fillrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawtext(int x,int y, const char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
@@ -180,6 +184,13 @@ static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, 
 void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
 
 
+	const char *p = "What is your problem?";
+	// cursor had bg=7, fg=0
+	// all others have white fg, black bg.
+	for(int loc=0;*p;loc++,p++){
+		writecharxy(loc, 1, *p, 0, 7, w, h, vgatext_base);
+    	// vgatext::writechar(loc,*p,0,7,vgatext_base);
+    }
   // this is just an example:
   //
   // Please create your own user interface

@@ -5,11 +5,17 @@
 struct shellstate_t{
     char curr_cmd[1<<9];
     int curr_pos;
+    int end_pos;
     bool execute;
     int num_key;
 };
 
 struct renderstate_t{
+	char *line[25];
+	int firstline;
+	int lastline;
+	int curr_pos; // cursor!
+	int num_key;
 };
 
 void shell_init(shellstate_t& state);
