@@ -1,6 +1,8 @@
 #include "labs/shell.h"
 #include "labs/vgatext.h"
 
+
+typedef long long ll;
 //
 // initialize shellstate
 //
@@ -139,6 +141,52 @@ void shell_update(uint8_t scankey, shellstate_t& s){
 //
 void shell_step(shellstate_t& s){
     if(!s.execute) return;
+    int x = 0;
+    while (s.curr_cmd[x] != ' ')
+	x++;
+    char blah[x+1];
+    for (int i = 0; i < x; i++)
+	blah[i] = s.curr_cmd[i];
+    blah[x] = '\0';
+    char echo[4] = "echo";
+    char fibbo[5] = "fibbo"
+    char facto[5] = "facto";
+    char clear[5] = "clear";
+    if (strcmp(blah,clear) == 0)
+    {
+	
+    }
+    else
+    {
+	// find next space!
+	x++;
+	int y = x;
+	while (s.curr_cmd[x] != '\0')
+	    x++;
+	if (strcmp(blah,echo) == 0)
+	{
+	    for (int i = y; i <= x; i++)
+		s.output[i-y] = s.cur_cmd[i];
+	}
+	else if (s.curr_cmd[x] == '-')
+	{
+	    s.output = "ERROR! Negative Input"
+	}
+	else
+	{
+	// convert str to long long.
+	    ll input = 0;
+	    for (int i = y; i < x; i++)
+		input = 10*input + s.curr_cmd[i];
+	    ll ans;
+	    if (strcmp(blah,fibbo) == 0)
+		ans = fibbo(input);
+	    else
+		ans = facto(input);
+	    // update output! TODO
+	}
+    }
+    s.execute = false;
   //
   //one way:
   // if a function is enabled in stateinout
@@ -163,6 +211,9 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
   //
   // etc.
   //
+    render.num_key = shell.num_key;
+    // TODO : curr_cmd is the next line, and output is its next.
+    // add these to render.Lines.
 }
 
 
@@ -170,6 +221,8 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 // compare a and b
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
+	return (a.num_key == b.num_key && a.curr_pos == b.curr_pos);
+	// TODO : add equality of Deque here. a.Deque == b.Deque
 }
 
 static void writecharxy(int x, int y, uint8_t c, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
@@ -184,11 +237,20 @@ static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, 
 void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
 
 
-	const char *p = "What is your problem?";
+	//const char *p = "What is your problem?";
 	// cursor had bg=7, fg=0
 	// all others have white fg, black bg.
-	for(int loc=0;*p;loc++,p++){
-		writecharxy(loc, 1, *p, 0, 7, w, h, vgatext_base);
+	for (int i = 0; i < 23; i++)
+		drawtext(0,i,state.Lines.get_i(i),w,0,7,vgatext_base);
+	//for(int loc=0;*p;loc++,p++){
+	//	writecharxy(loc, 1, *p, 7, 0, w, h, vgatext_base);
+	// MENU :
+	// STATUS BAR :
+	char *sbar = "Number of keys pressed = ";
+	strcat(sbar,itoa(state.num_key));
+	drawtext(0,24,sbar,w,0,7,vgatext_base);
+//	for (int ptr = 0; *sbar; ptr++,sbar++)
+//		writecharxy(ptr, 24, *sbar, 0, 7, w, h, vgatext_base);
     	// vgatext::writechar(loc,*p,0,7,vgatext_base);
     }
   // this is just an example:
@@ -207,6 +269,29 @@ void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
 // helper functions
 //
 //
+
+ll facto(ll x)
+{
+	ll ans = 1;
+	for (ll i = 2; i <= x; i++)
+		ans *= i;
+	return ans;
+}
+
+ll fibbo(ll x)
+{
+	ll a = 1;
+	ll b = 1;
+	ll count = 0;
+	while (count < x)
+	{
+		ll c = b;
+		b += a;
+		a = c;
+		count++
+	}
+	return b;
+}
 
 static void writecharxy(int x, int y, uint8_t c, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base){
   vgatext::writechar(y*w+x,c,bg,fg,vgatext_base);
@@ -244,7 +329,7 @@ static void drawrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int
   }
 }
 
-static void drawtext(int x,int y, const char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base){
+static void drawtext(int x,int y, char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base){
   for(int i=0;i<maxw;i++){
     writecharxy(x+i,y,str[i],bg,fg,w,h,vgatext_base);
     if(!str[i]){
