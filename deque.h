@@ -26,7 +26,7 @@ int Deque::size(){
 }
 
 char *Deque::get_i(int i){
-	return arr[(f+i)%SIZE];
+	return arr[(b-i-1+SIZE)%SIZE];
 }
 
 void Deque::push(char *c){
