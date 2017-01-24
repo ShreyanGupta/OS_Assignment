@@ -5,6 +5,8 @@
 
 #include "labs/deque.h"
 
+struct Deque;
+
 struct shellstate_t{
     Deque line;
     char *curr_cmd;

@@ -4,32 +4,31 @@
 #define SIZE 25
 
 struct Deque{
-	int s;
+	int s = 0;
 	char arr[SIZE][160];
-	int f;
-	int b;
-	Deque();
+	int f = 0;
+	int b = 0;
 	int size();
 	char *get_i(int);
 	void push(char *);
 };
 
-Deque::Deque(){
-	// for(int i=0; i<SIZE; ++i) arr[i] = NULL;
-	s = f = b = 0;
-}
+// inline Deque::Deque(){
+// 	// for(int i=0; i<SIZE; ++i) arr[i] = NULL;
+// 	s = f = b = 0;
+// }
 
-int Deque::size(){
+inline int Deque::size(){
 	// if(f == b) return 0;
 	// return (b-f+SIZE)%SIZE;
 	return s;
 }
 
-char *Deque::get_i(int i){
+inline char *Deque::get_i(int i){
 	return arr[(b-i-1+SIZE)%SIZE];
 }
 
-void Deque::push(char *c){
+inline void Deque::push(char *c){
 	if(s == SIZE){
 		// free(arr[f]);
 		f = (f+1)%SIZE;

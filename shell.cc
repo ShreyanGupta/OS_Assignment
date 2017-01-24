@@ -11,7 +11,7 @@ typedef long long ll;
 // initialize shellstate
 //
 void shell_init(shellstate_t& state){
-	char *temp = "";
+	char temp[1] = "";
 	state.line.push(temp);
     state.curr_cmd = state.line.get_i(0);
     state.curr_pos = 0;
@@ -21,13 +21,15 @@ void shell_init(shellstate_t& state){
     state.num_key = 0;
 }
 
-char memcmp(char* s1, char*s2)
+char memcmp1(char* s1, char* s2, int len)
 {
 	int x1 = 0;
 	int x2 = 0;
-	while (s1[x1] != '\0' && s2[x2] != '\0')
-		if (s1[x1] != s2[x2]) return 0;
-	return (s1[x1] == s2[x2]);
+	while (s1[x1] != '\0' && s2[x2] != '\0'){
+		if (s1[x1] != s2[x2]) return 1;
+    ++x1; ++x2;
+  }
+	return (s1[x1] != s2[x2]);
 }
 
 //
@@ -79,21 +81,22 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x0f : // tab
             break;
         case 0x1c : // enter
-        	char *temp = s.line.get_i(0);
-        	int i=0;
-        	while(*(curr_cmd+i) != '\0'){
-        		temp[i] = curr_cmd[i];
-        	}
-        	
-            s.execute = true;
-            break;
+        {
+          char *temp = s.line.get_i(0);
+          int i=0;
+          while(*(s.curr_cmd+i) != '\0'){
+            temp[i] = s.curr_cmd[i];
+          }
+          s.execute = true;
+          break;
+        }
         case 0x1d : // ctrl
             break;
         case 0x2a : // shift
             break;
         case 0x48 :	// up
-        	if(s.line_pos == line.size()) break;
-        	curr_cmd = line.get_i(++s.line_pos);
+        	if(s.line_pos == s.line.size()) break;
+        	s.curr_cmd = s.line.get_i(++s.line_pos);
         	while(*(s.curr_cmd + s.end_pos) != '\0'){
         		++s.end_pos;
         		++s.curr_pos;
@@ -101,7 +104,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         	break;
         case 0x50 : // down
         	if(s.line_pos == 0) break;
-        	curr_cmd = line.get_i(--s.line_pos);
+        	s.curr_cmd = s.line.get_i(--s.line_pos);
         	while(*(s.curr_cmd + s.end_pos) != '\0'){
         		++s.end_pos;
         		++s.curr_pos;
@@ -195,7 +198,7 @@ void shell_step(shellstate_t& s){
     char fibbonacci[6] = "fibbo";
     char factorial[6] = "facto";
     char clear[6] = "clear";
-    if (memcmp(blah,clear,6) == 0)
+    if (memcmp1(blah,clear,6) == 0)
     {
 	
     }
@@ -206,7 +209,7 @@ void shell_step(shellstate_t& s){
 	int y = x;
 	while (s.curr_cmd[x] != '\0')
 	    x++;
-	if (memcmp(blah,echo,5) == 0)
+	if (memcmp1(blah,echo,5) == 0)
 	{
 	    for (int i = y; i <= x; i++)
 		s.output[i-y] = s.curr_cmd[i];
@@ -223,7 +226,7 @@ void shell_step(shellstate_t& s){
 	    for (int i = y; i < x; i++)
 		input = 10*input + s.curr_cmd[i];
 	    ll ans;
-	    if (memcmp(blah,fibbonacci,6) == 0)
+	    if (memcmp1(blah,fibbonacci,6) == 0)
 		ans = fibbo(input);
 	    else
 		ans = facto(input);
@@ -272,7 +275,7 @@ bool render_eq(const renderstate_t& a, const renderstate_t& b){
 static void writecharxy(int x, int y, uint8_t c, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void fillrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
-static void drawtext(int x,int y, const char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
+static void drawtext(int x,int y, char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 
 //
