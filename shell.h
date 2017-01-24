@@ -17,14 +17,16 @@ struct shellstate_t{
     int num_key;
     bool cursor_on_curr_cmd;
     char output[1<<9];
+    bool render_clear;
 };
 
 struct renderstate_t{
-	Deque Lines;
+	Deque line;
 	int curr_pos; // cursor!
 	int num_key;
 	char output[1<<9];
 	bool cursor_on_curr;
+    char *curr_cmd;
 };
 
 void shell_init(shellstate_t& state);

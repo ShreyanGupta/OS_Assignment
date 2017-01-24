@@ -5,7 +5,7 @@ typedef long long ll;
 #include <string.h>
 #include <stdlib.h>
 
-#define SIZE 25
+#define SIZE 10
 
 //
 // initialize shellstate
@@ -19,6 +19,8 @@ void shell_init(shellstate_t& state){
     state.line_pos = 0;
     state.execute = false;
     state.num_key = 0;
+    state.cursor_on_curr_cmd = true;
+    state.render_clear = false;
 }
 
 char memcmp1(char* s1, char* s2, int len)
@@ -75,19 +77,25 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         	if(s.curr_pos == 0) break;
         	for(int i=s.curr_pos-1; i < s.end_pos; ++i) s.curr_cmd[i] = s.curr_cmd[i+1];
 	        // memcpy(s.curr_cmd+s.curr_pos-1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
-	    	s.curr_pos--;
-	    	s.end_pos--;
-            break;
+  	    	s.curr_pos--;
+  	    	s.end_pos--;
+          break;
         case 0x0f : // tab
-            break;
+          break;
         case 0x1c : // enter
         {
           char *temp = s.line.get_i(0);
           int i=0;
           while(*(s.curr_cmd+i) != '\0'){
             temp[i] = s.curr_cmd[i];
+            ++i;
           }
+          temp[i] = '\0';
+          char temp2[1] = "";
+          s.line.push(temp2);
+          s.curr_pos = s.end_pos = s.line_pos = 0;
           s.execute = true;
+          s.curr_cmd = s.line.get_i(0);
           break;
         }
         case 0x1d : // ctrl
@@ -95,8 +103,9 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x2a : // shift
             break;
         case 0x48 :	// up
-        	if(s.line_pos == s.line.size()) break;
+        	if(s.line_pos == s.line.size()-1) break;
         	s.curr_cmd = s.line.get_i(++s.line_pos);
+          s.curr_pos = s.end_pos = 0;
         	while(*(s.curr_cmd + s.end_pos) != '\0'){
         		++s.end_pos;
         		++s.curr_pos;
@@ -105,6 +114,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x50 : // down
         	if(s.line_pos == 0) break;
         	s.curr_cmd = s.line.get_i(--s.line_pos);
+          s.curr_pos = s.end_pos = 0;
         	while(*(s.curr_cmd + s.end_pos) != '\0'){
         		++s.end_pos;
         		++s.curr_pos;
@@ -175,7 +185,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
     	s.end_pos++;
     }
     s.curr_cmd[s.end_pos] = '\0';
-    hoh_debug("Current pos: " << s.curr_pos << " end pos " << s.end_pos << " line " << s.curr_cmd);
+    hoh_debug("Current pos: " << s.curr_pos << " end pos " << s.end_pos << " line size " << s.line.size() << " curr line " << s.curr_cmd);
     for(int i=0; i<s.line.size(); ++i){
     	hoh_debug("line " << i << " : " << s.line.get_i(i));
     }
@@ -188,11 +198,12 @@ void shell_update(uint8_t scankey, shellstate_t& s){
 void shell_step(shellstate_t& s){
     if(!s.execute) return;
     int x = 0;
-    while (s.curr_cmd[x] != ' ')
-	x++;
+    char *comm_exec = s.line.get_i(1);
+    while (comm_exec[x] != ' ')
+    	x++;
     char blah[x+1];
     for (int i = 0; i < x; i++)
-	blah[i] = s.curr_cmd[i];
+    blah[i] = comm_exec[i];
     blah[x] = '\0';
     char echo[5] = "echo";
     char fibbonacci[6] = "fibbo";
@@ -200,38 +211,38 @@ void shell_step(shellstate_t& s){
     char clear[6] = "clear";
     if (memcmp1(blah,clear,6) == 0)
     {
-	
+      s.render_clear = true;
     }
     else
     {
-	// find next space!
-	x++;
-	int y = x;
-	while (s.curr_cmd[x] != '\0')
-	    x++;
-	if (memcmp1(blah,echo,5) == 0)
-	{
-	    for (int i = y; i <= x; i++)
-		s.output[i-y] = s.curr_cmd[i];
-	}
-	else if (s.curr_cmd[x] == '-')
-	{
-	    char err[22] =  "ERROR! Negative Input";
-	    memcpy(s.output,err,22);
-	}
-	else
-	{
-	// convert str to long long.
-	    ll input = 0;
-	    for (int i = y; i < x; i++)
-		input = 10*input + s.curr_cmd[i];
-	    ll ans;
-	    if (memcmp1(blah,fibbonacci,6) == 0)
-		ans = fibbo(input);
-	    else
-		ans = facto(input);
-	    // update output! TODO
-	}
+    	// find next space!
+    	x++;
+    	int y = x;
+    	while (comm_exec[x] != '\0')
+    	    x++;
+    	if (memcmp1(blah,echo,5) == 0)
+    	{
+    	    for (int i = y; i <= x; i++)
+    	   	 s.output[i-y] = comm_exec[i];
+    	}
+    	else if (comm_exec[y] == '-')
+    	{
+    	    char err[22] =  "ERROR! Negative Input";
+    	    memcpy(s.output,err,22);
+    	}
+    	else
+    	{
+    	// convert str to long long.
+    	    ll input = 0;
+    	    for (int i = y; i < x; i++)
+    		    input = 10*input + comm_exec[i];
+    	    ll ans;
+    	    if (memcmp1(blah,fibbonacci,6) == 0)
+    		    ans = fibbo(input);
+    	    else
+    		    ans = facto(input);
+    	    // update output! TODO
+    	}
     }
     s.execute = false;
   //
@@ -247,8 +258,12 @@ void shell_step(shellstate_t& s){
 //
 // shellstate --> renderstate
 //
-void shell_render(const shellstate_t& shell, renderstate_t& render){
-
+void shell_render(const shellstate_t& s, renderstate_t& r){
+  if(s.render_clear){
+    r.line.clear();
+    s.render_clear = false;
+  }
+  
   //
   // renderstate. number of keys pressed = shellstate. number of keys pressed
   //
