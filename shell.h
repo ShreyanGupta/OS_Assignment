@@ -15,6 +15,7 @@ struct shellstate_t{
     int line_pos;
     bool execute;
     int num_key;
+    bool cursor_on_curr_cmd;
     char output[1<<9];
 };
 
@@ -23,6 +24,7 @@ struct renderstate_t{
 	int curr_pos; // cursor!
 	int num_key;
 	char output[1<<9];
+	bool cursor_on_curr;
 };
 
 void shell_init(shellstate_t& state);
