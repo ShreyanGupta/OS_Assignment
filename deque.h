@@ -1,15 +1,16 @@
 #ifndef DEQUE_H
 #define DEQUE_H
 
-#define SIZE 10
+#define SIZE 24
 
 struct Deque{
 	int s = 0;
 	char arr[SIZE][160];
 	int f = 0;
 	int b = 0;
-	int size();
+	int size() const;
 	char *get_i(int);
+	const char *read_i(int) const;
 	void push(char *);
 	void clear();
 };
@@ -19,7 +20,7 @@ struct Deque{
 // 	s = f = b = 0;
 // }
 
-inline int Deque::size(){
+inline int Deque::size() const{
 	// if(f == b) return 0;
 	// return (b-f+SIZE)%SIZE;
 	return s;
@@ -27,6 +28,10 @@ inline int Deque::size(){
 
 inline char *Deque::get_i(int i){
 	return arr[(b-i-1+SIZE)%SIZE];
+}
+
+inline const char *Deque::read_i(int i) const{
+	return (arr[(b-i-1+SIZE)%SIZE]);
 }
 
 inline void Deque::push(char *c){

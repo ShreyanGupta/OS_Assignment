@@ -9,24 +9,25 @@ struct Deque;
 
 struct shellstate_t{
     Deque line;
+    Deque renderline;
     char *curr_cmd;
     int curr_pos;
     int end_pos;
     int line_pos;
     bool execute;
     int num_key;
-    bool cursor_on_curr_cmd;
-    char output[1<<9];
-    bool render_clear;
+    int cursor_color;
+    // bool enter_pressed;
+    // char output[1<<9];
+    // bool render_clear;
+    // bool print_output;
 };
 
 struct renderstate_t{
-	Deque line;
+	const Deque* line;
 	int curr_pos; // cursor!
 	int num_key;
-	char output[1<<9];
-	bool cursor_on_curr;
-    char *curr_cmd;
+    int cursor_color;
 };
 
 void shell_init(shellstate_t& state);
@@ -39,3 +40,8 @@ void render(const renderstate_t& state, int w, int h, addr_t display_base);
 
 long long fibbo(long long x);
 long long facto(long long x);
+
+
+void int_to_string(int x, char *y2);
+void copy_string(char *to, const char *from);
+char memcmp1(char* s1, char* s2, int len);

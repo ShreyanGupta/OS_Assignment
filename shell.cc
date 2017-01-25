@@ -1,26 +1,37 @@
 #include "labs/shell.h"
 #include "labs/vgatext.h"
 
-typedef long long ll;
 #include <string.h>
 #include <stdlib.h>
 
-#define SIZE 10
+// TODO : help
 
+
+#define SIZE 24
+#define h1 "help    : Displays all the commands."
+#define h2 "clear   : Clears the window"
+#define h3 "fibbo x : Prints the value of fibbo(x)"
+#define h4 "facto x : Prints the factorial of the number x"
+#define h5 "echo  x : Prints the input x"
+
+typedef long long ll;
 //
 // initialize shellstate
 //
 void shell_init(shellstate_t& state){
-	char temp[1] = "";
-	state.line.push(temp);
+  	char temp[] = "";
+  	state.line.push(temp);
+
+    char tempr[3] = "$ ";
+    state.renderline.push(tempr);
     state.curr_cmd = state.line.get_i(0);
     state.curr_pos = 0;
     state.end_pos = 0;
     state.line_pos = 0;
     state.execute = false;
     state.num_key = 0;
-    state.cursor_on_curr_cmd = true;
-    state.render_clear = false;
+    state.cursor_color = 6;
+    // state.cursor_on_curr_cmd = true
 }
 
 char memcmp1(char* s1, char* s2, int len)
@@ -66,10 +77,13 @@ char memcmp1(char* s1, char* s2, int len)
 // - for example, you may want to handle up(0x48),down(0x50) arrow keys for menu.
 //
 void shell_update(uint8_t scankey, shellstate_t& s){
+    s.execute = false;
     hoh_debug("Got: "<<unsigned(scankey));
     ++s.num_key;
     bool write_key_press = false;
     char write_key;
+
+
     switch(scankey){
         case 0x01 : // esc
             break;
@@ -85,17 +99,24 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x1c : // enter
         {
           char *temp = s.line.get_i(0);
-          int i=0;
-          while(*(s.curr_cmd+i) != '\0'){
-            temp[i] = s.curr_cmd[i];
-            ++i;
-          }
-          temp[i] = '\0';
+          copy_string(temp,(const char*)s.curr_cmd);
+
+          char *tempr = s.renderline.get_i(0);
+          tempr[0] = '$'; tempr[1] = ' ';
+          copy_string(tempr+2,s.curr_cmd);
+
+          // int i=0;
+          // while(*(s.curr_cmd+i) != '\0'){
+          //   temp[i] = s.curr_cmd[i];
+          //   ++i;
+          // }
+          // temp[i] = '\0';
           char temp2[1] = "";
           s.line.push(temp2);
           s.curr_pos = s.end_pos = s.line_pos = 0;
-          s.execute = true;
           s.curr_cmd = s.line.get_i(0);
+          s.execute = true;
+          // s.enter_pressed = true;
           break;
         }
         case 0x1d : // ctrl
@@ -105,7 +126,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x48 :	// up
         	if(s.line_pos == s.line.size()-1) break;
         	s.curr_cmd = s.line.get_i(++s.line_pos);
-          s.curr_pos = s.end_pos = 0;
+          	s.curr_pos = s.end_pos = 0;
         	while(*(s.curr_cmd + s.end_pos) != '\0'){
         		++s.end_pos;
         		++s.curr_pos;
@@ -114,7 +135,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x50 : // down
         	if(s.line_pos == 0) break;
         	s.curr_cmd = s.line.get_i(--s.line_pos);
-          s.curr_pos = s.end_pos = 0;
+          	s.curr_pos = s.end_pos = 0;
         	while(*(s.curr_cmd + s.end_pos) != '\0'){
         		++s.end_pos;
         		++s.curr_pos;
@@ -185,10 +206,19 @@ void shell_update(uint8_t scankey, shellstate_t& s){
     	s.end_pos++;
     }
     s.curr_cmd[s.end_pos] = '\0';
-    hoh_debug("Current pos: " << s.curr_pos << " end pos " << s.end_pos << " line size " << s.line.size() << " curr line " << s.curr_cmd);
-    for(int i=0; i<s.line.size(); ++i){
-    	hoh_debug("line " << i << " : " << s.line.get_i(i));
+
+      if (!s.execute)
+      {
+        char *tempr = s.renderline.get_i(0);
+        tempr[0] = '$'; tempr[1] = ' ';
+        copy_string(tempr+2,s.curr_cmd);
+      }
+
+    hoh_debug("Current pos: " << s.curr_pos << " end pos " << s.end_pos << " line size " << s.renderline.size() << " curr line " << s.curr_cmd);
+    for(int i=0; i<s.renderline.size(); ++i){
+      hoh_debug("line " << i << " : " << s.renderline.get_i(i));
     }
+
 }
 
 
@@ -196,10 +226,13 @@ void shell_update(uint8_t scankey, shellstate_t& s){
 // do computation
 //
 void shell_step(shellstate_t& s){
-    if(!s.execute) return;
+    if(!s.execute)
+    {
+     return;
+    }
     int x = 0;
     char *comm_exec = s.line.get_i(1);
-    while (comm_exec[x] != ' ')
+    while (comm_exec[x] != ' ' && comm_exec[x] != '\0') 
     	x++;
     char blah[x+1];
     for (int i = 0; i < x; i++)
@@ -209,9 +242,23 @@ void shell_step(shellstate_t& s){
     char fibbonacci[6] = "fibbo";
     char factorial[6] = "facto";
     char clear[6] = "clear";
+    char help[5] = "help";
+    char cur_color[] = "cursorcolor";
+    char output[1<<9];
     if (memcmp1(blah,clear,6) == 0)
     {
-      s.render_clear = true;
+      s.renderline.clear();
+      char temp[3] = "$ ";
+      s.renderline.push(temp);
+      return;
+    }
+    else if (memcmp1(blah,help,5) == 0)
+    {
+      s.renderline.push(h1);
+      s.renderline.push(h2);
+      s.renderline.push(h3);
+      s.renderline.push(h4);
+      s.renderline.push(h5);
     }
     else
     {
@@ -223,27 +270,50 @@ void shell_step(shellstate_t& s){
     	if (memcmp1(blah,echo,5) == 0)
     	{
     	    for (int i = y; i <= x; i++)
-    	   	 s.output[i-y] = comm_exec[i];
+    	   	 output[i-y] = comm_exec[i];
     	}
     	else if (comm_exec[y] == '-')
     	{
     	    char err[22] =  "ERROR! Negative Input";
-    	    memcpy(s.output,err,22);
+    	    memcpy(output,err,22);
     	}
     	else
     	{
     	// convert str to long long.
     	    ll input = 0;
     	    for (int i = y; i < x; i++)
-    		    input = 10*input + comm_exec[i];
+    		    input = 10*input + (int)(comm_exec[i] - '0');
     	    ll ans;
     	    if (memcmp1(blah,fibbonacci,6) == 0)
     		    ans = fibbo(input);
-    	    else
+    	    else if(memcmp1(blah,factorial,6) == 0)
     		    ans = facto(input);
+          else if (memcmp1(blah,cur_color,12) == 0 && input > 0 && input < 8)
+          {
+            s.cursor_color = input;
+            char temp[] = "$ ";
+            s.renderline.push(temp);
+            s.execute = false;
+            return;
+          }
+    		else
+    		{
+    			ans = -1;
+    			char err[23] = "ERROR! Invalid Command";
+    			memcpy(output,err,23);
+    		}
     	    // update output! TODO
+    	    if (ans >= 0)
+    	    {
+    	    	// s.output = itoa(ans);
+            int_to_string(ans,output);
+            hoh_debug("answer = " << blah);
+    	    }
     	}
+      s.renderline.push(output);
     }
+    char temp[] = "$ ";
+    s.renderline.push(temp);
     s.execute = false;
   //
   //one way:
@@ -259,11 +329,21 @@ void shell_step(shellstate_t& s){
 // shellstate --> renderstate
 //
 void shell_render(const shellstate_t& s, renderstate_t& r){
-  if(s.render_clear){
-    r.line.clear();
-    s.render_clear = false;
-  }
-  
+
+  r.line = &(s.renderline);
+  r.curr_pos = s.curr_pos;
+  // int i=2;
+  // while(*temp != '\0'){
+  // 	curr_cmd[i] = *temp;
+  // 	++i; ++temp;
+  // }
+  // curr_cmd[i] = '\0';
+
+  r.cursor_color = s.cursor_color;
+  r.num_key = s.num_key;
+  // TODO : curr_cmd is the next line, and output is its next.
+  // add these to render.Lines.
+
   //
   // renderstate. number of keys pressed = shellstate. number of keys pressed
   //
@@ -273,9 +353,6 @@ void shell_render(const shellstate_t& s, renderstate_t& r){
   //
   // etc.
   //
-    render.num_key = shell.num_key;
-    // TODO : curr_cmd is the next line, and output is its next.
-    // add these to render.Lines.
 }
 
 
@@ -283,6 +360,7 @@ void shell_render(const shellstate_t& s, renderstate_t& r){
 // compare a and b
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
+	// return false;
 	return (a.num_key == b.num_key && a.curr_pos == b.curr_pos);
 	// TODO : add equality of Deque here. a.Deque == b.Deque
 }
@@ -292,25 +370,33 @@ static void fillrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int
 static void drawrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawtext(int x,int y, char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
-
+static void draw_const_text(int x,int y,const char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 //
 // Given a render state, we need to write it into vgatext buffer
 //
-void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
+void render(const renderstate_t& r, int w, int h, addr_t vgatext_base){
 
 
 	//const char *p = "What is your problem?";
 	// cursor had bg=7, fg=0
 	// all others have white fg, black bg.
-	//for (int i = 0; i < 23; i++)
-		//drawtext(0,i,state.line.get_i(i),w,0,7,vgatext_base);
+  const char *temp = "                                                                                ";
+  for (int i=0; i<SIZE; ++i) {
+    draw_const_text(0,i,temp,w,0,0,w,h,vgatext_base);
+  }
+	for (int i = r.line->size() - 1; i >= 0 ; --i)
+  {
+    // check for size more than 80.
+		draw_const_text(0,r.line->size()-1-i,r.line->read_i(i),w,7,0,w,h,vgatext_base);
+  }
+  writecharxy(2+r.curr_pos,r.line->size()-1,r.line->read_i(0)[r.curr_pos+2],0,r.cursor_color,w,h,vgatext_base);
 	//for(int loc=0;*p;loc++,p++){
 	//	writecharxy(loc, 1, *p, 7, 0, w, h, vgatext_base);
 	// MENU :
 	// STATUS BAR :
-	char sbar[26] = "Number of keys pressed = ";
-	//strcat(sbar,itoa(state.num_key));
-	drawtext(0,24,sbar,w,0,7,w,h,vgatext_base);
+	char sbar[80] = "Number of keys pressed = ";
+  int_to_string(r.num_key,sbar+25);
+	drawtext(0,24,sbar,w,0,r.cursor_color,w,h,vgatext_base);
 //	for (int ptr = 0; *sbar; ptr++,sbar++)
 //		writecharxy(ptr, 24, *sbar, 0, 7, w, h, vgatext_base);
     	// vgatext::writechar(loc,*p,0,7,vgatext_base);
@@ -324,7 +410,6 @@ void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
   //
 
 }
-
 
 //
 //
@@ -400,6 +485,16 @@ static void drawtext(int x,int y, char* str, int maxw, uint8_t bg, uint8_t fg, i
   }
 }
 
+static void draw_const_text(int x,int y,const char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base){
+  for(int i=0;i<maxw;i++){
+    writecharxy(x+i,y,str[i],bg,fg,w,h,vgatext_base);
+    if(!str[i]){
+      break;
+    }
+  }
+}
+
+
 static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base){
   enum {max=sizeof(uint32_t)*2+1};
   char a[max];
@@ -412,4 +507,31 @@ static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, 
   drawtext(x,y,a,maxw,bg,fg,w,h,vgatext_base);
 }
 
+void copy_string(char *to, const char *from){
+	while(*from != '\0'){
+		*to = *from;
+		++to; ++from;
+	}
+	*to = '\0';
+}
 
+void int_to_string(int x, char *y2){
+  char *y1 = y2;
+  int s = 0;
+  while(x != 0){
+    *y2 = x%10 + 48;
+    ++y2;
+    x /= 10;
+    ++s;
+  }
+  *(y2) = '\0';
+  --y2;
+  hoh_debug("size " << s << " " << (y2-y1) << " " << *y1 << " " << *y2);
+  for(int i=0; i<s/2; ++i){
+    char temp = *y1;
+    *y1 = *y2;
+    *y2 = temp;
+    ++y1; --y2;
+  }
+
+}
