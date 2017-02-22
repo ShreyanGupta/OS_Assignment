@@ -1,18 +1,16 @@
 #include "labs/shell.h"
 #include "labs/vgatext.h"
 
-#include <string.h>
 #include <stdlib.h>
-
-// TODO : help
-
+#include <string.h>
 
 #define SIZE 24
-#define h1 "help    : Displays all the commands."
-#define h2 "clear   : Clears the window"
-#define h3 "fibbo x : Prints the value of fibbo(x)"
-#define h4 "facto x : Prints the factorial of the number x"
-#define h5 "echo  x : Prints the input x"
+#define h1 "help          : Displays all the commands."
+#define h2 "clear         : Clears the window"
+#define h3 "fibbo       x : Prints the value of fibbo(x)"
+#define h4 "facto       x : Prints the factorial of the number x"
+#define h5 "echo        x : Prints the input x"
+#define h6 "cursorcolor x : Changes color of cursor"
 
 typedef long long ll;
 //
@@ -31,7 +29,6 @@ void shell_init(shellstate_t& state){
     state.execute = false;
     state.num_key = 0;
     state.cursor_color = 6;
-    // state.cursor_on_curr_cmd = true
 }
 
 char memcmp1(char* s1, char* s2, int len)
@@ -227,10 +224,9 @@ void shell_update(uint8_t scankey, shellstate_t& s){
 //
 void shell_step(shellstate_t& s){
     if(!s.execute)
-    {
      return;
-    }
     int x = 0;
+    // finding the command name:
     char *comm_exec = s.line.get_i(1);
     while (comm_exec[x] != ' ' && comm_exec[x] != '\0') 
     	x++;
@@ -247,18 +243,22 @@ void shell_step(shellstate_t& s){
     char output[1<<9];
     if (memcmp1(blah,clear,6) == 0)
     {
+      // executing clear
       s.renderline.clear();
       char temp[3] = "$ ";
       s.renderline.push(temp);
+      s.execute = false;
       return;
     }
     else if (memcmp1(blah,help,5) == 0)
     {
+      // executing help
       s.renderline.push(h1);
       s.renderline.push(h2);
       s.renderline.push(h3);
       s.renderline.push(h4);
       s.renderline.push(h5);
+      s.renderline.push(h6);
     }
     else
     {
@@ -296,12 +296,12 @@ void shell_step(shellstate_t& s){
             s.execute = false;
             return;
           }
-    		else
-    		{
-    			ans = -1;
-    			char err[23] = "ERROR! Invalid Command";
-    			memcpy(output,err,23);
-    		}
+      		else
+      		{
+      			ans = -1;
+      			char err[23] = "ERROR! Invalid Command";
+      			memcpy(output,err,23);
+      		}
     	    // update output! TODO
     	    if (ans >= 0)
     	    {

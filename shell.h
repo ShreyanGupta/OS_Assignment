@@ -8,19 +8,15 @@
 struct Deque;
 
 struct shellstate_t{
-    Deque line;
-    Deque renderline;
-    char *curr_cmd;
-    int curr_pos;
-    int end_pos;
-    int line_pos;
-    bool execute;
-    int num_key;
-    int cursor_color;
-    // bool enter_pressed;
-    // char output[1<<9];
-    // bool render_clear;
-    // bool print_output;
+    Deque line;     // Command history
+    Deque renderline; // Lines to be rendered
+    char *curr_cmd; // PointerCurrent command
+    int curr_pos;   // current posiiotn of cursor
+    int end_pos;    // end position of current line
+    int line_pos;   // Index of current command in Command History
+    bool execute;   // if there's some command to be executed
+    int num_key;    // number of keys pressed
+    int cursor_color; // color of cursor
 };
 
 struct renderstate_t{
@@ -41,7 +37,7 @@ void render(const renderstate_t& state, int w, int h, addr_t display_base);
 long long fibbo(long long x);
 long long facto(long long x);
 
-
+    // Helper functions : 
 void int_to_string(int x, char *y2);
 void copy_string(char *to, const char *from);
 char memcmp1(char* s1, char* s2, int len);
