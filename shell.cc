@@ -11,6 +11,7 @@
 #define h4 "facto       x : Prints the factorial of the number x"
 #define h5 "echo        x : Prints the input x"
 #define h6 "cursorcolor x : Changes color of cursor"
+#define h7 "corfacto    x : Calls the coroutine to find factorial of x"
 
 typedef long long ll;
 //
@@ -29,6 +30,8 @@ void shell_init(shellstate_t& state){
     state.execute = false;
     state.num_key = 0;
     state.cursor_color = 6;
+    state.coroutine_run = false;
+    state.coroutine_x = -1;
 }
 
 char memcmp1(char* s1, char* s2, int len)
@@ -73,6 +76,24 @@ char memcmp1(char* s1, char* s2, int len)
 // - only handle the keys which you're interested in
 // - for example, you may want to handle up(0x48),down(0x50) arrow keys for menu.
 //
+
+void shellstate_t::insert_answer(ll ans)
+{
+  // to add a new line to renderline, containing answer.
+  coroutine_run = false;
+
+  char curr_cmd_copy[80];
+  copy_string(curr_cmd_copy,renderline.get_i(0));
+  
+  char ans_str[] = "COR: Answer = ";
+  int_to_string(ans,ans_str + 14);
+  
+  char *tempr = renderline.get_i(0);
+  copy_string(tempr,ans_str);
+
+  renderline.push(curr_cmd_copy);
+}
+
 void shell_update(uint8_t scankey, shellstate_t& s){
     s.execute = false;
     hoh_debug("Got: "<<unsigned(scankey));
@@ -240,6 +261,7 @@ void shell_step(shellstate_t& s){
     char clear[6] = "clear";
     char help[5] = "help";
     char cur_color[] = "cursorcolor";
+    char cor_facto[] = "corfacto";
     char output[1<<9];
     if (memcmp1(blah,clear,6) == 0)
     {
@@ -259,9 +281,11 @@ void shell_step(shellstate_t& s){
       s.renderline.push(h4);
       s.renderline.push(h5);
       s.renderline.push(h6);
+      s.renderline.push(h7);
     }
     else
     {
+      // COMMANDS WITH AN INPUT
     	// find next space!
     	x++;
     	int y = x;
@@ -284,6 +308,7 @@ void shell_step(shellstate_t& s){
     	    for (int i = y; i < x; i++)
     		    input = 10*input + (int)(comm_exec[i] - '0');
     	    ll ans;
+
     	    if (memcmp1(blah,fibbonacci,6) == 0)
     		    ans = fibbo(input);
     	    else if(memcmp1(blah,factorial,6) == 0)
@@ -295,6 +320,21 @@ void shell_step(shellstate_t& s){
             s.renderline.push(temp);
             s.execute = false;
             return;
+          }
+          else if (memcmp1(blah,cor_facto,9) == 0)
+          {
+            if (!s.coroutine_run)
+            {
+              s.coroutine_x = input;
+              s.coroutine_run = true;
+            }
+            else
+            {
+              ans = -1;
+              char err[] = "ERROR! Coroutine already running.";
+              memcpy(output,err,sizeof(err));              
+            }
+
           }
       		else
       		{

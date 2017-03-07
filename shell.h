@@ -17,6 +17,10 @@ struct shellstate_t{
     bool execute;   // if there's some command to be executed
     int num_key;    // number of keys pressed
     int cursor_color; // color of cursor
+
+    bool coroutine_run;
+    long long coroutine_x;
+    void insert_answer(long long ans);
 };
 
 struct renderstate_t{

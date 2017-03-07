@@ -10,7 +10,6 @@ struct f_t{
     int x;
     int curr;
     long long answer;
-
 };
 
 
