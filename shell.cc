@@ -380,6 +380,7 @@ void shell_render(const shellstate_t& s, renderstate_t& r){
   // curr_cmd[i] = '\0';
 
   r.cursor_color = s.cursor_color;
+  r.coroutine_run = s.coroutine_run;
   r.num_key = s.num_key;
   // TODO : curr_cmd is the next line, and output is its next.
   // add these to render.Lines.
@@ -401,7 +402,7 @@ void shell_render(const shellstate_t& s, renderstate_t& r){
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
 	// return false;
-	return (a.num_key == b.num_key && a.curr_pos == b.curr_pos);
+	return ((a.num_key == b.num_key && a.curr_pos == b.curr_pos && a.coroutine_run == b.coroutine_run));
 	// TODO : add equality of Deque here. a.Deque == b.Deque
 }
 

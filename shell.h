@@ -28,6 +28,7 @@ struct renderstate_t{
 	int curr_pos; // cursor!
 	int num_key;
     int cursor_color;
+    bool coroutine_run;
 };
 
 void shell_init(shellstate_t& state);
