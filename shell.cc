@@ -138,7 +138,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         		++s.curr_pos;
         	}
         	break;
-        case 0x4b : // left	 
+        case 0x4b : // left
         	--s.curr_pos;
         	if(s.curr_pos < 0) s.curr_pos = 0;
         	break;
@@ -228,7 +228,7 @@ void shell_step(shellstate_t& s){
     int x = 0;
     // finding the command name:
     char *comm_exec = s.line.get_i(1);
-    while (comm_exec[x] != ' ' && comm_exec[x] != '\0') 
+    while (comm_exec[x] != ' ' && comm_exec[x] != '\0')
     	x++;
     char blah[x+1];
     for (int i = 0; i < x; i++)
@@ -380,7 +380,7 @@ void render(const renderstate_t& r, int w, int h, addr_t vgatext_base){
 	//const char *p = "What is your problem?";
 	// cursor had bg=7, fg=0
 	// all others have white fg, black bg.
-  const char *temp = "                                                                                ";
+    const char *temp = "                                                                                ";
   for (int i=0; i<SIZE; ++i) {
     draw_const_text(0,i,temp,w,0,0,w,h,vgatext_base);
   }
