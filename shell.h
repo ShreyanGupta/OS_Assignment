@@ -37,7 +37,7 @@ void render(const renderstate_t& state, int w, int h, addr_t display_base);
 long long fibbo(long long x);
 long long facto(long long x);
 
-    // Helper functions : 
+    // Helper functions :
 void int_to_string(int x, char *y2);
 void copy_string(char *to, const char *from);
 char memcmp1(char* s1, char* s2, int len);
