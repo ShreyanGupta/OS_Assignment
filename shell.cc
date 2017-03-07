@@ -515,7 +515,7 @@ void copy_string(char *to, const char *from){
 	*to = '\0';
 }
 
-void int_to_string(int x, char *y2){
+void int_to_string(long long x, char *y2){
   char *y1 = y2;
   int s = 0;
   while(x != 0){
