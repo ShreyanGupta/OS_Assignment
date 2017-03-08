@@ -283,6 +283,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
 // do computation
 //
 void shell_step(shellstate_t& s){
+    // hoh_debug("in shell step");
     if(!s.execute)
      return;
     int x = 0;

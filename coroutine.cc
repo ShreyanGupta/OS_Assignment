@@ -34,6 +34,8 @@ void shell_step_coroutine(shellstate_t& shellstate, coroutine_t& f_coro, f_t& f_
         shellstate.insert_answer(f_locals.answer);
     }
 
+    // hoh_debug("leaving cor, going to fiber");
+
 }
 
 
