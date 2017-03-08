@@ -5,7 +5,7 @@
 
 struct Deque{
 	int s = 0;
-	char arr[SIZE][160];
+	char arr[SIZE][90];
 	int f = 0;
 	int b = 0;
 	int size() const;

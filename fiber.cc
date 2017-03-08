@@ -2,7 +2,7 @@
 
 void fiber_facto(addr_t *pmain_stack, addr_t *pf_stack, int *px, bool *prun, int *pans){
     
-    hoh_debug("addr of answer in F : " << (int)(pans));
+    hoh_debug("addr of main_stack in F : " << (int)(pmain_stack) << " " << (int)(*pmain_stack));
     addr_t& main_stack = *pmain_stack; // boilerplate: to ease the transition from existing code
     addr_t& f_stack    = *pf_stack;
     int &x = *px;
@@ -16,14 +16,18 @@ void fiber_facto(addr_t *pmain_stack, addr_t *pf_stack, int *px, bool *prun, int
         hoh_debug("main_stack " << main_stack << "\n");
         stack_saverestore(f_stack, main_stack);
     }
-    // running = false;
-    // stack_saverestore(f_stack, main_stack);
-    while(true){
-        running = false;
-        // ret = temp;
-        stack_saverestore(f_stack, main_stack);
-    }
+    running = false;
+    stack_saverestore(f_stack, main_stack);
+    // while(true){
+    //     running = false;
+    //     // ret = temp;
+    //     stack_saverestore(f_stack, main_stack);
+    // }
+}
 
+void f(addr_t *main_stack, addr_t *f_stack){
+    hoh_debug("entered function");
+    stack_saverestore(*f_stack, *main_stack);
 }
 
 void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, addr_t& f_stack, addr_t f_array, uint32_t f_arraysize){
@@ -48,14 +52,17 @@ void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, addr_t& f_st
         shellstate.fs.started = false;
         shellstate.fs.running = true;
         hoh_debug("f started is true!");
-        hoh_debug("main_stack " << main_stack << " addr(ans) " << (int)(&shellstate.fs.answer));
+        hoh_debug("main_stack " << (int)(&main_stack) << (int)main_stack);
         stack_init5(f_stack, &f_array, f_arraysize, &fiber_facto, 
             &main_stack, &f_stack, &shellstate.fs.x, &shellstate.fs.running, &shellstate.fs.answer);
+        
+        // stack_init2(f_stack, &f_array, f_arraysize, &f,
+        //     &main_stack, &f_stack);
     }
     if(shellstate.fs.running){
-        hoh_debug("f running! \n");
+        hoh_debug("f running!");
         stack_saverestore(main_stack, f_stack);
-        hoh_debug("f came out! \n");
+        hoh_debug("f came out!");
         if(!shellstate.fs.running){
             hoh_debug("f ended! \n" << shellstate.fs.answer);
             shellstate.insert_answer_fiber(shellstate.fs.answer);
