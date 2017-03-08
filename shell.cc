@@ -289,7 +289,6 @@ void shell_update(uint8_t scankey, shellstate_t& s){
 // do computation
 //
 void shell_step(shellstate_t& s){
-    hoh_debug("in shell step");
     if(!s.execute)
      return;
     int x = 0;
@@ -425,7 +424,6 @@ void shell_step(shellstate_t& s){
 //stateinout.args[0] = 5;
 //stateinout.args[1] = 5;
   //
-hoh_debug("out shell step");
 }
 
 
@@ -433,7 +431,6 @@ hoh_debug("out shell step");
 // shellstate --> renderstate
 //
 void shell_render(const shellstate_t& s, renderstate_t& r){
-  hoh_debug("enter shell render");
   r.line = &(s.renderline);
   r.curr_pos = s.curr_pos;
   // int i=2;
@@ -445,6 +442,7 @@ void shell_render(const shellstate_t& s, renderstate_t& r){
 
   r.cursor_color = s.cursor_color;
   r.coroutine_run = s.coroutine_run;
+  r.fiber_run = s.fs.running;
   r.num_key = s.num_key;
   // TODO : curr_cmd is the next line, and output is its next.
   // add these to render.Lines.
@@ -458,7 +456,6 @@ void shell_render(const shellstate_t& s, renderstate_t& r){
   //
   // etc.
   //
-  hoh_debug("exit shell render");
 }
 
 
@@ -467,7 +464,10 @@ void shell_render(const shellstate_t& s, renderstate_t& r){
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
 	// return false;
-	return ((a.num_key == b.num_key && a.curr_pos == b.curr_pos && a.coroutine_run == b.coroutine_run));
+	return ((a.num_key == b.num_key 
+    && a.curr_pos == b.curr_pos 
+    && a.coroutine_run == b.coroutine_run
+    && a.fiber_run == b.fiber_run));
 	// TODO : add equality of Deque here. a.Deque == b.Deque
 }
 
@@ -482,7 +482,6 @@ static void draw_const_text(int x,int y,const char* str, int maxw, uint8_t bg, u
 //
 void render(const renderstate_t& r, int w, int h, addr_t vgatext_base){
 
-  hoh_debug("enter render");
 	//const char *p = "What is your problem?";
 	// cursor had bg=7, fg=0
 	// all others have white fg, black bg.
@@ -490,8 +489,6 @@ void render(const renderstate_t& r, int w, int h, addr_t vgatext_base){
   for (int i=0; i<SIZE; ++i) {
     draw_const_text(0,i,temp,w,0,0,w,h,vgatext_base);
   }
-  hoh_debug("1");
-
 
 	for (int i = r.line->size() - 1; i >= 0 ; --i)
   {
@@ -499,7 +496,6 @@ void render(const renderstate_t& r, int w, int h, addr_t vgatext_base){
 		draw_const_text(0,r.line->size()-1-i,r.line->read_i(i),w,7,0,w,h,vgatext_base);
   }
 
-    hoh_debug("2");
 
   writecharxy(2+r.curr_pos,r.line->size()-1,r.line->read_i(0)[r.curr_pos+2],0,r.cursor_color,w,h,vgatext_base);
 	//for(int loc=0;*p;loc++,p++){
@@ -508,22 +504,9 @@ void render(const renderstate_t& r, int w, int h, addr_t vgatext_base){
 	// STATUS BAR :
 
   char sbar[80] = "Number of keys pressed = ";
-  hoh_debug("3 num key " << r.num_key
-    // sbar[0]
-    // << sbar[1]
-    // << sbar[2]
-    // << sbar[3]
-    // << sbar[4]
-    // << sbar[5]
-    // << sbar[6]
-    // << sbar[7]
-    // << sbar[8]
-    // << sbar[9]
-    // << sbar[10]
-    );
   int_to_string(r.num_key,sbar+25);
 	drawtext(0,24,sbar,w,0,r.cursor_color,w,h,vgatext_base);
-  hoh_debug("exit render");
+
 //	for (int ptr = 0; *sbar; ptr++,sbar++)
 //		writecharxy(ptr, 24, *sbar, 0, 7, w, h, vgatext_base);
     	// vgatext::writechar(loc,*p,0,7,vgatext_base);

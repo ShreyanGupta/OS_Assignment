@@ -39,6 +39,7 @@ struct renderstate_t{
 	int num_key;
     int cursor_color;
     bool coroutine_run;
+    bool fiber_run;
 };
 
 void shell_init(shellstate_t& state);

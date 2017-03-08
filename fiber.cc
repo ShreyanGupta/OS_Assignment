@@ -53,7 +53,7 @@ void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, addr_t& f_st
         shellstate.fs.running = true;
         hoh_debug("f started is true!");
         hoh_debug("main_stack " << (int)(&main_stack) << (int)main_stack);
-        stack_init5(f_stack, &f_array, f_arraysize, &fiber_facto, 
+        stack_init5(f_stack, f_array, f_arraysize, &fiber_facto, 
             &main_stack, &f_stack, &shellstate.fs.x, &shellstate.fs.running, &shellstate.fs.answer);
         
         // stack_init2(f_stack, &f_array, f_arraysize, &f,
