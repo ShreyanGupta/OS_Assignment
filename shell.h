@@ -8,10 +8,14 @@
 struct Deque;
 
 struct fiberstate{
-    bool started;
-    bool running;
-    int x;
-    int answer;
+    bool started[6];
+    bool running[6];
+    int x[6];
+    int answer[6];
+    int total_fiber;
+    int curr_fiber; // +1 mod 6 for scheduling
+    addr_t f_stack;
+    addr_t main_stack;
 };
 
 struct shellstate_t{
@@ -30,7 +34,7 @@ struct shellstate_t{
 
     fiberstate fs;  // fiber state
     void insert_answer(int ans);
-    void insert_answer_fiber(int ans);
+    void insert_answer_fiber(int ans, int curr);
 };
 
 struct renderstate_t{

@@ -35,10 +35,15 @@ void shell_init(shellstate_t& state){
     state.coroutine_x = -1;
 
     fiberstate &f = state.fs;
-    f.started = false;
-    f.running = false;
-    f.x = 0;
-    f.answer = 1;
+    for (int i = 0; i < 6; i++)
+    {
+      f.started[i] = false;
+      f.running[i] = false;
+      f.x[i] = -1;
+      f.answer[i] = 1;
+    }
+    f.total_fiber = 0;
+    f.curr_fiber = 0;
 }
 
 char memcmp1(char* s1, char* s2, int len)
@@ -112,7 +117,7 @@ void shellstate_t::insert_answer(int ans)
           }
 }
 
-void shellstate_t::insert_answer_fiber(int ans)
+void shellstate_t::insert_answer_fiber(int ans, int curr)
 {
   hoh_debug(" ----------------  INSERT ANSWER FIBER CALLED : " << renderline.get_i(0) << "|");
   coroutine_run = false;
@@ -123,7 +128,19 @@ void shellstate_t::insert_answer_fiber(int ans)
 
   hoh_debug("curr_cmd_copy = " << curr_cmd_copy << "|");
   
-  char ans_str[] = "FIBER: Answer = ";
+  char ans_str[40];
+  char s1[] = "Answer to facto fiber                 ";
+  char s2[] = "Answer to fibbo fiber                 ";
+  if (curr < 3)
+    copy_string(ans_str,s1); 
+  else
+  {
+    copy_string(ans_str,s2);
+    curr -= 3;
+  }
+  ans_str[22] = (char)('0' + curr);
+  ans_str[23] = ' ';
+  ans_str[24] = '\0';
 
   char *tempr = renderline.get_i(0);
   copy_string(tempr,ans_str);
@@ -132,7 +149,7 @@ void shellstate_t::insert_answer_fiber(int ans)
   renderline.push(curr_cmd_copy);
 
   char *temp1 = renderline.get_i(1);
-  int_to_string(ans,temp1+14);
+  int_to_string(ans,temp1+23);
 
           for(int i=0; i< renderline.size(); ++i){
             hoh_debug("line " << i << " : " << renderline.get_i(i));
@@ -308,17 +325,18 @@ void shell_step(shellstate_t& s){
     char cur_color[] = "cursorcolor";
     char cor_facto[] = "corfacto";
     char fiber_facto[] = "fiberfacto";
+    char fiber_fibbo[] = "fiberfibbo";
     char output[1<<9];
 
           bool print_out = true;
-          bool add_line = true;
+          // bool add_line = true;
 
     if (memcmp1(blah,clear,6) == 0)
     {
       // executing clear
       s.renderline.clear();
       print_out = false;
-      add_line = true;
+      // add_line = true;
     }
     else if (memcmp1(blah,help,5) == 0)
     {
@@ -367,7 +385,7 @@ void shell_step(shellstate_t& s){
           {
             s.cursor_color = input;
             print_out = false;
-            add_line = true;
+            // add_line = true;
           }
           else if (memcmp1(blah,cor_facto,9) == 0)
           {
@@ -384,24 +402,58 @@ void shell_step(shellstate_t& s){
               memcpy(output,err,sizeof(err));              
             }
             print_out = false;
-            add_line = true;
+            // add_line = true;
 
           }
-          else if (memcmp1(blah, fiber_facto, 11) == 0)
+          else if (memcmp1(blah, fiber_facto, 11) == 0 || memcmp1(blah, fiber_fibbo, 11) == 0)
           {
-            if (!s.fs.running)
+            // if (!s.fs.running)
+            // {
+            //   s.fs.x = input;
+            //   s.fs.started = true;
+            // }
+            // else
+            // {
+            //   ans = -1;
+            //   char err[] = "ERROR! Fiber already running.";
+            //   memcpy(output,err,sizeof(err));                            
+            // }
+            // print_out = false;
+
+
+            // code for 2.3 :
+            if (s.fs.total_fiber < 5)
             {
-              s.fs.x = input;
-              s.fs.started = true;
+              // insert to relevant slot
+              int first_or_last3 = (memcmp1(blah, fiber_facto, 11) == 0) ? 0 : 3;
+
+                bool found = false;
+                for (int i = first_or_last3; i < first_or_last3+3; i++)
+                {
+                  if (!(s.fs.started[i] || s.fs.running[i]))
+                  {
+                    s.fs.started[i] = true;
+                    s.fs.x[i] = input;
+
+                    found = true;
+                    s.fs.total_fiber += 1;
+                    break;
+                  }
+                }
+                if (!found)
+                {
+                  ans = -1;
+                  char err[] = "ERROR! 3 Fibers of this function running already!";
+                  memcpy(output,err,sizeof(err));
+                }
+
             }
             else
             {
               ans = -1;
-              char err[] = "ERROR! Fiber already running.";
-              memcpy(output,err,sizeof(err));                            
+              char err[] = "ERROR! 5 Fibers running already!";
+              memcpy(output,err,sizeof(err));
             }
-            print_out = false;
-            add_line = true;
           }
       		else
       		{
@@ -419,12 +471,12 @@ void shell_step(shellstate_t& s){
     	}
       if (print_out) s.renderline.push(output);
     }
-    if (add_line)
-    {
+    // if (add_line)
+    // {
       char temp[] = "$ ";
       s.renderline.push(temp);
       s.execute = false;      
-    }
+    // }
   //
   //one way:
   // if a function is enabled in stateinout

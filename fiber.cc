@@ -25,6 +25,29 @@ void fiber_facto(addr_t *pmain_stack, addr_t *pf_stack, int *px, bool *prun, int
     // }
 }
 
+void fiber_fibbo(addr_t *pmain_stack, addr_t *pf_stack, int *px, bool *prun, int *pans)
+{
+    addr_t& main_stack = *pmain_stack; // boilerplate: to ease the transition from existing code
+    addr_t& f_stack    = *pf_stack;
+    int &x = *px;
+    int &answer = *pans;
+    bool &running = *prun;
+
+    answer = 1;
+    int a = 1;
+    int c;
+    for(int i=1; i<=x; ++i){
+        c = a;
+        a = answer;
+        answer += c;
+        hoh_debug("yo peeps, i = " << i << ", answer = " << answer);
+        hoh_debug("main_stack " << main_stack << "\n");
+        stack_saverestore(f_stack, main_stack);
+    }
+    running = false;
+    stack_saverestore(f_stack, main_stack);    
+}
+
 void f(addr_t *main_stack, addr_t *f_stack){
     hoh_debug("entered function");
     stack_saverestore(*f_stack, *main_stack);
