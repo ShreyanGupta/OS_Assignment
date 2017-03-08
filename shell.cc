@@ -12,6 +12,7 @@
 #define h5 "echo        x : Prints the input x"
 #define h6 "cursorcolor x : Changes color of cursor"
 #define h7 "corfacto    x : Calls the coroutine to find factorial of x"
+#define h8 "fiberfacto  x : Calls the fiber to find factorial of x"
 
 typedef long long ll;
 //
@@ -77,7 +78,7 @@ char memcmp1(char* s1, char* s2, int len)
 // - for example, you may want to handle up(0x48),down(0x50) arrow keys for menu.
 //
 
-void shellstate_t::insert_answer(ll ans)
+void shellstate_t::insert_answer(int ans)
 {
   // to add a new line to renderline, containing answer.
   hoh_debug(" ----------------  INSERT ANSWER CALLED : " << renderline.get_i(0) << "|");
@@ -85,7 +86,7 @@ void shellstate_t::insert_answer(ll ans)
 
   char curr_cmd_copy[81] = "                                                                                ";
   copy_string(curr_cmd_copy,renderline.get_i(0));
-  hoh_debug("Address of curr_cmd_copy : " << curr_cmd_copy);
+  // hoh_debug("Address of curr_cmd_copy : " << curr_cmd_copy);
 
   hoh_debug("curr_cmd_copy = " << curr_cmd_copy << "|");
   
@@ -103,6 +104,33 @@ void shellstate_t::insert_answer(ll ans)
           for(int i=0; i< renderline.size(); ++i){
             hoh_debug("line " << i << " : " << renderline.get_i(i));
           }
+}
+
+void shellstate_t::insert_answer_fiber(int ans)
+{
+  hoh_debug(" ----------------  INSERT ANSWER FIBER CALLED : " << renderline.get_i(0) << "|");
+  coroutine_run = false;
+
+  char curr_cmd_copy[81] = "                                                                                ";
+  copy_string(curr_cmd_copy,renderline.get_i(0));
+  // hoh_debug("Address of curr_cmd_copy : " << curr_cmd_copy);
+
+  hoh_debug("curr_cmd_copy = " << curr_cmd_copy << "|");
+  
+  char ans_str[] = "FIBER: Answer = ";
+
+  char *tempr = renderline.get_i(0);
+  copy_string(tempr,ans_str);
+
+  hoh_debug("Pushing this : " << curr_cmd_copy);
+  renderline.push(curr_cmd_copy);
+
+  char *temp1 = renderline.get_i(1);
+  int_to_string(ans,temp1+14);
+
+          for(int i=0; i< renderline.size(); ++i){
+            hoh_debug("line " << i << " : " << renderline.get_i(i));
+          }  
 }
 
 void shell_update(uint8_t scankey, shellstate_t& s){
@@ -273,6 +301,7 @@ void shell_step(shellstate_t& s){
     char help[5] = "help";
     char cur_color[] = "cursorcolor";
     char cor_facto[] = "corfacto";
+    char fiber_facto[] = "fiberfacto";
     char output[1<<9];
     if (memcmp1(blah,clear,6) == 0)
     {
@@ -293,6 +322,7 @@ void shell_step(shellstate_t& s){
       s.renderline.push(h5);
       s.renderline.push(h6);
       s.renderline.push(h7);
+      s.renderline.push(h8);
     }
     else
     {
@@ -347,6 +377,20 @@ void shell_step(shellstate_t& s){
               memcpy(output,err,sizeof(err));              
             }
 
+          }
+          else if (memcmp1(blah, fiber_facto, 11) == 0)
+          {
+            if (!s.fs.running)
+            {
+              s.fs.x = input;
+              s.fs.started = true;
+            }
+            else
+            {
+              ans = -1;
+              char err[] = "ERROR! Fiber already running.";
+              memcpy(output,err,sizeof(err));                            
+            }
           }
       		else
       		{

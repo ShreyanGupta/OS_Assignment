@@ -7,6 +7,13 @@
 
 struct Deque;
 
+struct fiberstate{
+    bool started;
+    bool running;
+    int x;
+    int answer;
+};
+
 struct shellstate_t{
     Deque line;     // Command history
     Deque renderline; // Lines to be rendered
@@ -18,9 +25,12 @@ struct shellstate_t{
     int num_key;    // number of keys pressed
     int cursor_color; // color of cursor
 
-    bool coroutine_run;
-    long long coroutine_x;
-    void insert_answer(long long ans);
+    bool coroutine_run;     // is coroutine running?
+    long long coroutine_x;  // parameter to be passed
+
+    fiberstate fs;  // fiber state
+    void insert_answer(int ans);
+    void insert_answer_fiber(int ans);
 };
 
 struct renderstate_t{
