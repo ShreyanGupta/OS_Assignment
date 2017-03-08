@@ -80,23 +80,34 @@ char memcmp1(char* s1, char* s2, int len)
 void shellstate_t::insert_answer(ll ans)
 {
   // to add a new line to renderline, containing answer.
+  hoh_debug(" ----------------  INSERT ANSWER CALLED : " << renderline.get_i(0) << "|");
   coroutine_run = false;
 
-  char curr_cmd_copy[80];
+  char curr_cmd_copy[81] = "                                                                                ";
   copy_string(curr_cmd_copy,renderline.get_i(0));
+  hoh_debug("Address of curr_cmd_copy : " << curr_cmd_copy);
+
+  hoh_debug("curr_cmd_copy = " << curr_cmd_copy << "|");
   
   char ans_str[] = "COR: Answer = ";
-  int_to_string(ans,ans_str + 14);
-  
+
   char *tempr = renderline.get_i(0);
   copy_string(tempr,ans_str);
 
+  hoh_debug("Pushing this : " << curr_cmd_copy);
   renderline.push(curr_cmd_copy);
+
+  char *temp1 = renderline.get_i(1);
+  int_to_string(ans,temp1+14);
+
+          for(int i=0; i< renderline.size(); ++i){
+            hoh_debug("line " << i << " : " << renderline.get_i(i));
+          }
 }
 
 void shell_update(uint8_t scankey, shellstate_t& s){
     s.execute = false;
-    hoh_debug("Got: "<<unsigned(scankey));
+    hoh_debug("Got: "<< unsigned(scankey));
     ++s.num_key;
     bool write_key_press = false;
     char write_key;
@@ -232,10 +243,10 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         copy_string(tempr+2,s.curr_cmd);
       }
 
-    hoh_debug("Current pos: " << s.curr_pos << " end pos " << s.end_pos << " line size " << s.renderline.size() << " curr line " << s.curr_cmd);
-    for(int i=0; i<s.renderline.size(); ++i){
-      hoh_debug("line " << i << " : " << s.renderline.get_i(i));
-    }
+    // hoh_debug("Current pos: " << s.curr_pos << " end pos " << s.end_pos << " line size " << s.renderline.size() << " curr line " << s.curr_cmd);
+    // for(int i=0; i<s.renderline.size(); ++i){
+    //   hoh_debug("line " << i << " : " << s.renderline.get_i(i));
+    // }
 
 }
 
@@ -556,7 +567,7 @@ void copy_string(char *to, const char *from){
 	*to = '\0';
 }
 
-void int_to_string(long long x, char *y2){
+void int_to_string(int x, char *y2){
   char *y1 = y2;
   int s = 0;
   while(x != 0){

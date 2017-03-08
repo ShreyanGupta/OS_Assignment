@@ -25,6 +25,8 @@ void shell_step_coroutine(shellstate_t& shellstate, coroutine_t& f_coro, f_t& f_
     if(!shellstate.coroutine_run) return;
     bool done = false;
     f_locals.x = shellstate.coroutine_x;
+    // f_locals.curr = 1;
+    hoh_debug("x = " << f_locals.x << ", curr = " << f_locals.curr);
     c_facto(f_coro, f_locals, done);
     if(done){
         shellstate.insert_answer(f_locals.answer);
