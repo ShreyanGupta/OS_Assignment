@@ -310,14 +310,16 @@ void shell_step(shellstate_t& s){
     char cor_facto[] = "corfacto";
     char fiber_facto[] = "fiberfacto";
     char output[1<<9];
+
+          bool print_out = true;
+          bool add_line = true;
+
     if (memcmp1(blah,clear,6) == 0)
     {
       // executing clear
       s.renderline.clear();
-      char temp[3] = "$ ";
-      s.renderline.push(temp);
-      s.execute = false;
-      return;
+      print_out = false;
+      add_line = true;
     }
     else if (memcmp1(blah,help,5) == 0)
     {
@@ -357,6 +359,7 @@ void shell_step(shellstate_t& s){
     		    input = 10*input + (int)(comm_exec[i] - '0');
     	    ll ans;
 
+
     	    if (memcmp1(blah,fibbonacci,6) == 0)
     		    ans = fibbo(input);
     	    else if(memcmp1(blah,factorial,6) == 0)
@@ -364,10 +367,8 @@ void shell_step(shellstate_t& s){
           else if (memcmp1(blah,cur_color,12) == 0 && input > 0 && input < 8)
           {
             s.cursor_color = input;
-            char temp[] = "$ ";
-            s.renderline.push(temp);
-            s.execute = false;
-            return;
+            print_out = false;
+            add_line = true;
           }
           else if (memcmp1(blah,cor_facto,9) == 0)
           {
@@ -383,6 +384,8 @@ void shell_step(shellstate_t& s){
               char err[] = "ERROR! Coroutine already running.";
               memcpy(output,err,sizeof(err));              
             }
+            print_out = false;
+            add_line = true;
 
           }
           else if (memcmp1(blah, fiber_facto, 11) == 0)
@@ -398,6 +401,8 @@ void shell_step(shellstate_t& s){
               char err[] = "ERROR! Fiber already running.";
               memcpy(output,err,sizeof(err));                            
             }
+            print_out = false;
+            add_line = true;
           }
       		else
       		{
@@ -413,11 +418,14 @@ void shell_step(shellstate_t& s){
             hoh_debug("answer = " << blah);
     	    }
     	}
-      s.renderline.push(output);
+      if (print_out) s.renderline.push(output);
     }
-    char temp[] = "$ ";
-    s.renderline.push(temp);
-    s.execute = false;
+    if (add_line)
+    {
+      char temp[] = "$ ";
+      s.renderline.push(temp);
+      s.execute = false;      
+    }
   //
   //one way:
   // if a function is enabled in stateinout
@@ -425,7 +433,7 @@ void shell_step(shellstate_t& s){
 //stateinout.args[0] = 5;
 //stateinout.args[1] = 5;
   //
-hoh_debug("out shell step");
+// hoh_debug("out shell step");
 }
 
 

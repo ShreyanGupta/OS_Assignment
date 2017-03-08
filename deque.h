@@ -1,7 +1,7 @@
 #ifndef DEQUE_H
 #define DEQUE_H
 
-#define SIZE 24
+#define SIZE 15
 
 struct Deque{
 	int s = 0;
