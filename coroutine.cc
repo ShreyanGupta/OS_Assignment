@@ -14,7 +14,9 @@ void c_facto(coroutine_t &f_coro, f_t &f_locals, bool &done){
     }
 
     done = true;
-    h_end(f_coro);
+    f_locals.curr = 0;
+    coroutine_reset(f_coro);
+    // h_end(f_coro);
 }
 
 

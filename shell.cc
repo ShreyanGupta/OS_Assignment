@@ -334,6 +334,7 @@ void shell_step(shellstate_t& s){
           }
           else if (memcmp1(blah,cor_facto,9) == 0)
           {
+            // ans = -1;
             if (!s.coroutine_run)
             {
               s.coroutine_x = input;
