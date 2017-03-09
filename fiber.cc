@@ -18,10 +18,13 @@ void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, addr_t& f_st
     //     stack_init5(f.f_stack, f_array, f_arraysize, (i<3)? &fiber_fibbo : &fiber_facto, 
     //         &main_stack, &f.f_stack, &f.x[i], &f.running[i], &f.answer[i]);
     // }
+    f.main_stack = &main_stack;
+
     int &curr = f.curr_fiber;
     if(f.running[curr]){
-        stack_saverestore(f.main_stack, f.f_stack);
+        stack_saverestore(*f.main_stack, *f.f_stack);
         if(!f.running[curr]){
+            f.total_fiber -= 1;
             shellstate.insert_answer_fiber(f.answer[curr], curr);
         }
     }

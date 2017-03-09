@@ -71,20 +71,21 @@ void shell_step_fiber_scheduler(shellstate_t& shellstate, addr_t stackptrs[], si
     bool found = false;
     while (!found)
     {
-    	found = (f.running[f.curr_fiber%6] || f.started[f.curr_fiber%6]);
-    	f.curr_fiber += 1;
+        // hoh_debug("f_stack of " << f.curr_fiber << " is : " << stackptrs[f.curr_fiber]);
+        f.curr_fiber = (f.curr_fiber+1)%6;
+        found = (f.running[f.curr_fiber] || f.started[f.curr_fiber]);
     }
-    f.curr_fiber = (f.curr_fiber-1)%6;
     // current decided! now ->
     int i = f.curr_fiber;
-    f.f_stack = stackptrs[i];
+    f.f_stack = &stackptrs[i];
 
     if (f.started[i])
     {
+        hoh_debug("stackptr size : " << stackptrs_size);
         f.started[i] = false;
         f.running[i] = true;
         hoh_debug("f " << i << " started is true!");
-        stack_init5(f.f_stack, arrays, arrays_size, (i<3)? &fiber_fibbo : &fiber_facto, 
-            &f.main_stack, &f.f_stack, &f.x[i], &f.running[i], &f.answer[i]);        
+        stack_init5(*f.f_stack, arrays + i*4096, 4096, (i<3)? &fiber_facto : &fiber_fibbo, 
+            &*f.main_stack, &*f.f_stack, &f.x[i], &f.running[i], &f.answer[i]);        
     }
 }

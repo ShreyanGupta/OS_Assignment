@@ -14,8 +14,8 @@ struct fiberstate{
     int answer[6];
     int total_fiber;
     int curr_fiber; // +1 mod 6 for scheduling
-    addr_t f_stack;
-    addr_t main_stack;
+    addr_t* f_stack;
+    addr_t* main_stack;
 };
 
 struct shellstate_t{

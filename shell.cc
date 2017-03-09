@@ -120,6 +120,7 @@ void shellstate_t::insert_answer(int ans)
 void shellstate_t::insert_answer_fiber(int ans, int curr)
 {
   hoh_debug(" ----------------  INSERT ANSWER FIBER CALLED : " << renderline.get_i(0) << "|");
+  hoh_debug("ans = " << ans << ", curr = " << curr);
   coroutine_run = false;
 
   char curr_cmd_copy[81] = "                                                                                ";
@@ -138,7 +139,7 @@ void shellstate_t::insert_answer_fiber(int ans, int curr)
     copy_string(ans_str,s2);
     curr -= 3;
   }
-  ans_str[22] = (char)('0' + curr);
+  ans_str[22] = (char)((int)'0' + curr);
   ans_str[23] = ' ';
   ans_str[24] = '\0';
 
@@ -149,7 +150,7 @@ void shellstate_t::insert_answer_fiber(int ans, int curr)
   renderline.push(curr_cmd_copy);
 
   char *temp1 = renderline.get_i(1);
-  int_to_string(ans,temp1+23);
+  int_to_string(ans,temp1+24);
 
           for(int i=0; i< renderline.size(); ++i){
             hoh_debug("line " << i << " : " << renderline.get_i(i));
@@ -448,6 +449,8 @@ void shell_step(shellstate_t& s){
                   char err[] = "ERROR! 3 Fibers of this function running already!";
                   memcpy(output,err,sizeof(err));
                 }
+                else
+                  print_out = false;
 
             }
             else
@@ -504,7 +507,7 @@ void shell_render(const shellstate_t& s, renderstate_t& r){
 
   r.cursor_color = s.cursor_color;
   r.coroutine_run = s.coroutine_run;
-  r.fiber_run = s.fs.running;
+  r.fiber_run = (s.fs.total_fiber > 0);
   r.num_key = s.num_key;
   // TODO : curr_cmd is the next line, and output is its next.
   // add these to render.Lines.
