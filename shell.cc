@@ -435,6 +435,8 @@ void shell_step(shellstate_t& s){
                     s.fs.started[i] = true;
                     s.fs.x[i] = input;
 
+                    hoh_debug("ASSIGNED FIBER TO " << i);
+
                     found = true;
                     s.fs.total_fiber += 1;
                     break;

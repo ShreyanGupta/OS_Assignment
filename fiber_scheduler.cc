@@ -1,5 +1,53 @@
 #include "labs/fiber_scheduler.h"
 
+void fiber_facto(addr_t *pmain_stack, addr_t *pf_stack, int *px, bool *prun, int *pans){
+    
+    hoh_debug("addr of main_stack in F : " << (int)(pmain_stack) << " " << (int)(*pmain_stack));
+    addr_t& main_stack = *pmain_stack; // boilerplate: to ease the transition from existing code
+    addr_t& f_stack    = *pf_stack;
+    int &x = *px;
+    int &answer = *pans;
+    bool &running = *prun;
+
+    answer = 1;
+    for(int i=1; i<=x; ++i){
+        answer *= i;
+        hoh_debug("yo peeps, i = " << i << ", answer = " << answer);
+        hoh_debug("main_stack " << main_stack << "\n");
+        stack_saverestore(f_stack, main_stack);
+    }
+    running = false;
+    stack_saverestore(f_stack, main_stack);
+    // while(true){
+    //     running = false;
+    //     // ret = temp;
+    //     stack_saverestore(f_stack, main_stack);
+    // }
+}
+
+void fiber_fibbo(addr_t *pmain_stack, addr_t *pf_stack, int *px, bool *prun, int *pans)
+{
+    addr_t& main_stack = *pmain_stack; // boilerplate: to ease the transition from existing code
+    addr_t& f_stack    = *pf_stack;
+    int &x = *px;
+    int &answer = *pans;
+    bool &running = *prun;
+
+    answer = 1;
+    int a = 1;
+    int c;
+    for(int i=1; i<=x; ++i){
+        c = a;
+        a = answer;
+        answer += c;
+        hoh_debug("yo peeps, i = " << i << ", answer = " << answer);
+        hoh_debug("main_stack " << main_stack << "\n");
+        stack_saverestore(f_stack, main_stack);
+    }
+    running = false;
+    stack_saverestore(f_stack, main_stack);    
+}
+
 //
 // stackptrs:      Type: addr_t[stackptrs_size].  array of stack pointers (generalizing: main_stack and f_stack)
 // stackptrs_size: number of elements in 'stacks'.
@@ -31,9 +79,12 @@ void shell_step_fiber_scheduler(shellstate_t& shellstate, addr_t stackptrs[], si
     int i = f.curr_fiber;
     f.f_stack = stackptrs[i];
 
-    f.started[i] = false;
-    f.running[i] = true;
-    hoh_debug("f " << i << " started is true!");
-    stack_init5(f.f_stack, arrays, arrays_size, (i<3)? &fiber_fibbo : &fiber_facto, 
-        &f.main_stack, &f.f_stack, &f.x[i], &f.running[i], &f.answer[i]);
+    if (f.started[i])
+    {
+        f.started[i] = false;
+        f.running[i] = true;
+        hoh_debug("f " << i << " started is true!");
+        stack_init5(f.f_stack, arrays, arrays_size, (i<3)? &fiber_fibbo : &fiber_facto, 
+            &f.main_stack, &f.f_stack, &f.x[i], &f.running[i], &f.answer[i]);        
+    }
 }
