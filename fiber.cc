@@ -10,12 +10,24 @@ void shell_step_fiber(
     dev_lapic_t &lapic)
 {
     fiberstate &f = shellstate.fs;
+    f.main_stack = &main_stack;
     int &curr = f.curr_fiber;
     if(f.running[curr]){
         hoh_debug("about to go to function");
-        lapic.reset_timer_count(1000000);
-        stack_saverestore(main_stack, *f.f_stack);
+
+        preempt.saved_stack = *f.f_stack;
+        lapic.reset_timer_count(10000000);
+
+        // hoh_debug("preempt mein : " << preempt.saved_stack << ", f mein : " << *f.f_stack << ", mainstack : " << main_stack);
+
+        stack_saverestore(main_stack, preempt.saved_stack);
+        preempt.yielding = false;
+        // hoh_debug("preempt mein : " << preempt.saved_stack << ", f mein : " << *f.f_stack << ", mainstack : " << main_stack);        
+
+        *f.f_stack = preempt.saved_stack;
+        
         if(!f.running[curr]){
+        // hoh_debug("exit func" << (int)f.running[curr]);
             f.total_fiber -= 1;
             shellstate.insert_answer_fiber(f.answer[curr], curr);
         }

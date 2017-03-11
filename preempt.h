@@ -26,6 +26,7 @@
 struct preempt_t{
   // your data structure, if any
   addr_t saved_stack; //feel free to change it - provided as an example
+  bool yielding = false;
 
 };
 
@@ -39,19 +40,24 @@ struct preempt_t{
 // _f   : C function to be called 
 //        ex: we may have to do send EOI to LAPIC or PIC etc.
 //
-#  define  _ring0_preempt(_name,_f)            \
-  __asm(                                       \
-      "  .text                            \n\t"\
-      " " STR(_name) ":                   \n\t"\
-      "  pushl %edx                       \n\t"\
-      "  pushl %ecx                       \n\t"\
-      "  pushl %eax                       \n\t"\
-      "  call " STR(_f) "                 \n\t"\
-      "  popl  %eax                       \n\t"\
-      "  popl  %ecx                       \n\t"\
-      "  popl  %edx                       \n\t"\
-      "                                   \n\t"\
-      "  # insert your code here                      \n\t"\
+#  define  _ring0_preempt(_name,_f)                   \
+  __asm(                                              \
+      "  .text                                        \n\t"\
+      " " STR(_name) ":                               \n\t"\
+      "  pushl %edx                                   \n\t"\
+      "  pushl %ecx                                   \n\t"\
+      "  pushl %eax                                   \n\t"\
+      "  call " STR(_f) "                             \n\t"\
+      "  popl  %eax                                   \n\t"\
+      "  popl  %ecx                                   \n\t"\
+      "  popl  %edx                                   \n\t"\
+      "                                               \n\t"\
+      "  # insert your code here                      \n\t"\   
+      "  cmp $0x1, %gs:"STR(core_offset_preempt+4)"   \n\t"\
+      "  jne noty                                     \n\t"\
+      "  sti                                          \n\t"\
+      "  ret                                          \n\t"\
+      " noty:                                         \n\t"\
       "  pushl %eax                                   \n\t"\
       "  pushl %ebx                                   \n\t"\
       "  pushl %ecx                                   \n\t"\
@@ -59,11 +65,12 @@ struct preempt_t{
       "  pushl %esi                                   \n\t"\
       "  pushl %edi                                   \n\t"\
       "  pushl %ebp                                   \n\t"\
-      "   pushl $1f                                   \n\t"\
-      "   movl %esp, %gs:"STR(core_offset_preempt)"   \n\t"\      
-      "   movl %gs:"STR(core_offset_mainstack)", %esp \n\t"\      
-      "   ret                                         \n\t"\
-      "   1:                                          \n\t"\
+      "  pushl $1f                                    \n\t"\
+      "  movl %esp, %gs:"STR(core_offset_preempt)"    \n\t"\      
+      "  movl %gs:"STR(core_offset_mainstack)", %esp  \n\t"\      
+      "  sti                                          \n\t"\
+      "  ret                                          \n\t"\
+      " 1:                                            \n\t"\
       "  popl %ebp                                    \n\t"\
       "  popl %edi                                    \n\t"\
       "  popl %esi                                    \n\t"\
@@ -71,11 +78,8 @@ struct preempt_t{
       "  popl %ecx                                    \n\t"\
       "  popl %ebx                                    \n\t"\
       "  popl %eax                                    \n\t"\
-      "   sti                                         \n\t"\
       "  # end code here                              \n\t"\
-      "                                   \n\t"\
-      "                                   \n\t"\
-      "  jmp iret_toring0                 \n\t"\
-      )                                        \
+      "  jmp iret_toring0                             \n\t"\
+      )                                               \
 
 

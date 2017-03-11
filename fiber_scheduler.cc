@@ -9,13 +9,13 @@ void fiber_facto_new(int *px, bool *prun, int *pans){
 
     answer = 1;
     for(int i=1; i<=x; ++i){
-        hoh_debug("i = " << i);
+        hoh_debug("i = " << i << "\t, for x = " << x);
         answer *= i;
     }
     hoh_debug("done with facto new");
     while(true){
         hoh_debug("done");
-        running = false;
+        *prun = false;
     }
 }
 
@@ -39,10 +39,10 @@ void fiber_facto_new(int *px, bool *prun, int *pans){
 //     stack_saverestore(f_stack, main_stack);
 // }
 
-void fiber_fibbo(addr_t *pmain_stack, addr_t *pf_stack, int *px, bool *prun, int *pans)
+void fiber_fibbo(addr_t *pmain_stack, preempt_t *ppreempt, int *px, bool *prun, int *pans)
 {
     addr_t& main_stack = *pmain_stack; // boilerplate: to ease the transition from existing code
-    addr_t& f_stack    = *pf_stack;
+    preempt_t& preempt    = *ppreempt;
     int &x = *px;
     int &answer = *pans;
     bool &running = *prun;
@@ -56,10 +56,11 @@ void fiber_fibbo(addr_t *pmain_stack, addr_t *pf_stack, int *px, bool *prun, int
         answer += c;
         hoh_debug("yo peeps, i = " << i << ", answer = " << answer);
         hoh_debug("main_stack " << main_stack << "\n");
-        stack_saverestore(f_stack, main_stack);
+        preempt.yielding = true;
+        stack_saverestore(preempt.saved_stack, main_stack);
     }
     running = false;
-    stack_saverestore(f_stack, main_stack);    
+    stack_saverestore(preempt.saved_stack, main_stack);    
 }
 
 //
@@ -88,27 +89,37 @@ void shell_step_fiber_scheduler(
 {
     fiberstate &f = shellstate.fs;
     if (f.total_fiber == 0) return;
+
+    // stackptrs[i] = *f.f_stack;
+
     bool found = false;
+    hoh_debug("old i = " << f.curr_fiber);
     while (!found)
     {
         f.curr_fiber = (f.curr_fiber+1)%6;
         found = (f.running[f.curr_fiber] || f.started[f.curr_fiber]);
     }
     int i = f.curr_fiber;
-    preempt.saved_stack = stackptrs[i];
+    // preempt.saved_stack = stackptrs[i];
+    hoh_debug("new i = " << i);
     
+    // f.f_stack = &preempt.saved_stack;
     f.f_stack = &stackptrs[i];
+    
 
 
     if (f.started[i])
     {
+        hoh_debug("addr of saved stack : " << (int)&preempt.saved_stack << ", addr of BOOL : " << (int)&preempt.yielding);
+        // if (i < 3)
+        hoh_debug("VALUE OF BOOL : ------------- " << preempt.yielding);
         f.started[i] = false;
         f.running[i] = true;
         hoh_debug("f " << i << " started is true!");
         if(i<3) stack_init3(*f.f_stack, arrays + i*4096, 4096, &fiber_facto_new, 
             &f.x[i], &f.running[i], &f.answer[i]);
         else stack_init5(*f.f_stack, arrays + i*4096, 4096, &fiber_fibbo, 
-            &*f.main_stack, &*f.f_stack, &f.x[i], &f.running[i], &f.answer[i]);        
+            &main_stack, &preempt, &f.x[i], &f.running[i], &f.answer[i]);        
     }
 }
 
