@@ -65,12 +65,20 @@ struct preempt_t{
       "  pushl %esi                                   \n\t"\
       "  pushl %edi                                   \n\t"\
       "  pushl %ebp                                   \n\t"\
+      "  movl %esp, %ebp                              \n\t"\
+      "  subl $512, %esp                              \n\t"\
+      "  andl $0xfffffff0, %esp                       \n\t"\
+      "  fxsave (%esp)                                \n\t"\
+      "  pushl %ebp                                   \n\t"\
       "  pushl $1f                                    \n\t"\
       "  movl %esp, %gs:"STR(core_offset_preempt)"    \n\t"\      
       "  movl %gs:"STR(core_offset_mainstack)", %esp  \n\t"\      
       "  sti                                          \n\t"\
       "  ret                                          \n\t"\
       " 1:                                            \n\t"\
+      "  popl %ebp                                    \n\t"\
+      "  fxrstor (%esp)                               \n\t"\
+      "  movl %ebp, %esp                              \n\t"\
       "  popl %ebp                                    \n\t"\
       "  popl %edi                                    \n\t"\
       "  popl %esi                                    \n\t"\

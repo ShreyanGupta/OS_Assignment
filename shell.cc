@@ -1,8 +1,7 @@
 #include "labs/shell.h"
 #include "labs/vgatext.h"
 
-#include <stdlib.h>
-#include <string.h>
+// #include <stdlib.h>
 
 #define SIZE 24
 #define h1 "help          : Displays all the commands."
@@ -13,6 +12,7 @@
 #define h6 "cursorcolor x : Changes color of cursor"
 #define h7 "corfacto    x : Calls the coroutine to find factorial of x"
 #define h8 "fiberfacto  x : Calls the fiber to find factorial of x"
+#define h9 "fiberfibbo  x : Calls the fiber to find fibbonacci of x"
 
 typedef long long ll;
 //
@@ -55,6 +55,12 @@ char memcmp1(char* s1, char* s2, int len)
     ++x1; ++x2;
   }
 	return (s1[x1] != s2[x2]);
+}
+
+void memcpy1(void* v1, void* v2, int len)
+{
+  for (int i = 0; i < len; i++)
+    *(char*)(v1++) = *(char*)(v2++);
 }
 
 //
@@ -171,7 +177,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
         case 0x0e : // backspace
         	if(s.curr_pos == 0) break;
         	for(int i=s.curr_pos-1; i < s.end_pos; ++i) s.curr_cmd[i] = s.curr_cmd[i+1];
-	        // memcpy(s.curr_cmd+s.curr_pos-1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
+	        // memcpy1(s.curr_cmd+s.curr_pos-1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
   	    	s.curr_pos--;
   	    	s.end_pos--;
           break;
@@ -281,7 +287,7 @@ void shell_update(uint8_t scankey, shellstate_t& s){
     }
     if (write_key_press){
     	for(int i=s.end_pos; i > s.curr_pos; --i) s.curr_cmd[i] = s.curr_cmd[i-1];
-    	// memcpy(s.curr_cmd+s.curr_pos+1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
+    	// memcpy1(s.curr_cmd+s.curr_pos+1,s.curr_cmd+s.curr_pos,s.end_pos-s.curr_pos);
     	s.curr_cmd[s.curr_pos] = write_key;
     	s.curr_pos++;
     	s.end_pos++;
@@ -350,6 +356,7 @@ void shell_step(shellstate_t& s){
       s.renderline.push(h6);
       s.renderline.push(h7);
       s.renderline.push(h8);
+      s.renderline.push(h9);
     }
     else
     {
@@ -367,7 +374,7 @@ void shell_step(shellstate_t& s){
     	else if (comm_exec[y] == '-')
     	{
     	    char err[22] =  "ERROR! Negative Input";
-    	    memcpy(output,err,22);
+    	    memcpy1(output,err,22);
     	}
     	else
     	{
@@ -400,7 +407,7 @@ void shell_step(shellstate_t& s){
             {
               ans = -1;
               char err[] = "ERROR! Coroutine already running.";
-              memcpy(output,err,sizeof(err));              
+              memcpy1(output,err,sizeof(err));              
             }
             print_out = false;
             // add_line = true;
@@ -417,7 +424,7 @@ void shell_step(shellstate_t& s){
             // {
             //   ans = -1;
             //   char err[] = "ERROR! Fiber already running.";
-            //   memcpy(output,err,sizeof(err));                            
+            //   memcpy1(output,err,sizeof(err));                            
             // }
             // print_out = false;
 
@@ -447,7 +454,7 @@ void shell_step(shellstate_t& s){
                 {
                   ans = -1;
                   char err[] = "ERROR! 3 Fibers of this function running already!";
-                  memcpy(output,err,sizeof(err));
+                  memcpy1(output,err,sizeof(err));
                 }
                 else
                   print_out = false;
@@ -457,14 +464,14 @@ void shell_step(shellstate_t& s){
             {
               ans = -1;
               char err[] = "ERROR! 5 Fibers running already!";
-              memcpy(output,err,sizeof(err));
+              memcpy1(output,err,sizeof(err));
             }
           }
       		else
       		{
       			ans = -1;
       			char err[23] = "ERROR! Invalid Command";
-      			memcpy(output,err,23);
+      			memcpy1(output,err,23);
       		}
     	    // update output! TODO
     	    if (ans >= 0)
