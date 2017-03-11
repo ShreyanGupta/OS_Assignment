@@ -436,7 +436,7 @@ void shell_step(shellstate_t& s){
                     s.fs.started[i] = true;
                     s.fs.x[i] = input;
 
-                    hoh_debug("ASSIGNED FIBER TO " << i);
+                    // hoh_debug("ASSIGNED FIBER TO " << i);
 
                     found = true;
                     s.fs.total_fiber += 1;
@@ -701,7 +701,7 @@ void int_to_string(int x, char *y2){
   }
   *(y2) = '\0';
   --y2;
-  hoh_debug("number = " << x << ", size " << s << " " << (y2-y1) << " " << *y1 << " " << *y2);
+  // hoh_debug("number = " << x << ", size " << s << " " << (y2-y1) << " " << *y1 << " " << *y2);
   for(int i=0; i<s/2; ++i){
     char temp = *y1;
     *y1 = *y2;
